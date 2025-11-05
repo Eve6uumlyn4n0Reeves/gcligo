@@ -1,0 +1,140 @@
+name: CI
+
+on:
+  push:
+    branches: ["main", "master"]
+  pull_request:
+
+jobs:
+  # 后端测试和检查
+  backend:
+    name: Backend Tests & Checks
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: gcli2api
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      POSTGRES_DSN: postgres://postgres:postgres@localhost:5432/gcli2api?sslmode=disable
+      GOSUMDB: sum.golang.org
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22.x"
+          cache: true
+
+      - name: Go mod tidy
+        run: make tidy
+
+      - name: Wait for PostgreSQL
+        run: |
+          for i in {1..20}; do
+            pg_isready -d "$POSTGRES_DSN" >/dev/null 2>&1 && break
+            sleep 3
+          done
+          pg_isready -d "$POSTGRES_DSN"
+
+      - name: Apply migrations
+        run: make migrate DSN="$POSTGRES_DSN"
+
+      - name: Verify migration version
+        run: make migrate-version DSN="$POSTGRES_DSN"
+
+      - name: Go lint
+        run: make lint
+
+      - name: Go test with coverage threshold
+        run: make test-with-threshold
+
+      - name: Build
+        run: make build
+
+  # 前端测试和检查
+  frontend:
+    name: Frontend Tests & Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: "npm"
+          cache-dependency-path: "web/package-lock.json"
+
+      - name: Install dependencies
+        run: make web-install
+
+      - name: TypeScript type check
+        run: make typecheck
+
+      - name: Frontend lint
+        run: make web-lint
+
+      - name: Frontend tests with coverage threshold
+        run: make web-test-with-threshold
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./web/coverage/lcov.info
+          flags: frontend
+          fail_ci_if_error: false
+
+  # 集成检查
+  integration:
+    name: Integration Checks
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22.x"
+          cache: true
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: "npm"
+          cache-dependency-path: "web/package-lock.json"
+
+      - name: Install dependencies
+        run: |
+          make tidy
+          make node-install
+          make web-install
+
+      - name: Type generation
+        run: make typegen
+
+      - name: Web sync check
+        run: make check-web-sync
+
+      - name: Bundle size check
+        run: make bundle-size
+
+      - name: Type coverage check
+        run: make web-type-coverage

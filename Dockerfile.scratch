@@ -1,0 +1,19 @@
+FROM scratch
+
+WORKDIR /app
+
+# Copy prebuilt static linux-amd64 binary and web assets
+# Build it beforehand via:
+#   GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o build/linux-amd64/gcli2api-go ./cmd/server
+COPY dist/gcli2api-go /app/gcli2api-go
+COPY web /app/web
+
+# Runtime writable directories (use host bind mounts)
+ENV OPENAI_PORT=8317 \
+    AUTH_DIR=/data/auths \
+    HEADER_PASSTHROUGH=false \
+    AUTO_IMAGE_PLACEHOLDER=true
+
+EXPOSE 8317
+
+ENTRYPOINT ["/app/gcli2api-go"]

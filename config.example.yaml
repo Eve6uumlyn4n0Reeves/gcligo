@@ -1,0 +1,62 @@
+# Example configuration for GCLI2API-Go
+# Copy to config.yaml and adjust values
+
+openai_port: 8317
+gemini_port: 8318 # set 0 to disable
+base_path: ""
+web_admin_enabled: true
+
+# Authentication
+management_key: "change-me"
+
+# Storage backend: file|redis|postgres|mongodb|auto
+storage_backend: file
+storage_base_dir: ~/.gcli2api/storage
+
+# Retry and limits
+retry_enabled: true
+retry_max: 3
+retry_interval_sec: 1
+retry_max_interval_sec: 8
+
+rate_limit_enabled: false
+rate_limit_rps: 100
+rate_limit_burst: 200
+
+# Usage statistics
+usage_reset_interval_hours: 24
+usage_reset_timezone: "UTC+7"
+usage_reset_hour_local: 0
+
+# Routing
+routing_debug_headers: false
+sticky_ttl_seconds: 300
+router_cooldown_base_ms: 2000
+router_cooldown_max_ms: 60000
+persist_routing_state: true
+routing_persist_interval_sec: 60
+
+# Auto probe
+auto_probe_enabled: true
+auto_probe_hour_utc: 7
+auto_probe_model: gemini-2.5-flash
+auto_probe_timeout_sec: 10
+
+# Preferred base models for registry/assembly
+preferred_base_models:
+  - gemini-2.5-pro
+  - gemini-2.5-flash
+
+# Model variants configuration
+# Set to true to disable model variants and only expose base models
+disable_model_variants: false
+
+# Text sanitizer (disabled by default)
+sanitizer_enabled: false
+# sanitizer_patterns:
+#   - (?i)pattern_to_strip
+
+# Disabled models (base models or variants)
+# disabled_models:
+#   - gemini-2.5-pro-maxthinking
+#   - 假流式/gemini-2.5-flash

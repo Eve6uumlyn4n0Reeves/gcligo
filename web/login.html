@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>登录 · 管理控制台</title>
+  <style>
+    /* 极简黑白灰登录页 */
+    :root { --bg:#f5f6f7; --surface:#fff; --fg:#111827; --muted:#6b7280; --border:#e5e7eb; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif; margin:0; background:var(--bg); color:var(--fg); }
+    .wrap { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; }
+    .card { width:100%; max-width:420px; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:24px; box-shadow:none; }
+    h1 { margin:0 0 8px; font-size:20px; color:var(--fg); }
+    p { margin:0 0 16px; color:var(--muted); font-size:14px; }
+    label { display:block; margin:8px 0 6px; font-size:13px; color:var(--fg); }
+    input[type="password"] { width:100%; padding:12px 14px; background:#fff; color:var(--fg); border:1px solid var(--border); border-radius:8px; outline:none; }
+    input[type="password"]:focus { border-color:#111; box-shadow:0 0 0 3px rgba(17,17,17,0.08); }
+    .btn { width:100%; padding:12px 14px; margin-top:14px; background:#111; color:#fff; border:0; border-radius:8px; cursor:pointer; font-weight:600; }
+    .btn:disabled { opacity:.6; cursor:not-allowed; }
+    .msg { margin-top:12px; font-size:13px; padding:10px 12px; border-radius:8px; display:none; }
+    .msg.error { background:#fff; color:#b91c1c; border:1px solid #fecaca; }
+    .footer { margin-top:16px; text-align:center; font-size:12px; color:var(--muted); }
+    a { color:#111; text-decoration:none; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card" role="main" aria-label="登录">
+      <h1>登录管理控制台</h1>
+      <p>请输入管理密码以继续使用。</p>
+      <form id="loginForm">
+        <label for="password">管理密码</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required />
+        <button id="submitBtn" class="btn" type="submit">登录</button>
+        <div id="message" class="msg error" role="alert"></div>
+        <div class="msg info" aria-live="polite" style="display:none;">
+          提示：如果无法登录，请联系管理员在服务端配置文件中设置管理密码。
+        </div>
+      </form>
+      <div class="footer">登录成功后将跳转至管理控制台</div>
+    </div>
+  </div>
+  <script>
+  (function(){
+    var form = document.getElementById('loginForm');
+    var pwd = document.getElementById('password');
+    var btn = document.getElementById('submitBtn');
+    var msg = document.getElementById('message');
+    function basePath(){
+      try{ if (window.__BASE_PATH__) return window.__BASE_PATH__; }catch(e){}
+      var p = location.pathname || '';
+      // 支持 /login 与 /admin 两种承载位置
+      return p.replace(/\/?(login|admin)\/?$/, '');
+    }
+    function showError(t){
+      if(!msg) return;
+      msg.textContent=String(t||'登录失败，请重试');
+      msg.style.display='block';
+      try{ if (pwd) { pwd.setAttribute('aria-invalid','true'); pwd.setAttribute('aria-describedby','message'); } }catch(_){ }
+    }
+    function clearError(){
+      if(!msg) return;
+      msg.textContent='';
+      msg.style.display='none';
+      try{ if (pwd) { pwd.removeAttribute('aria-invalid'); pwd.removeAttribute('aria-describedby'); } }catch(_){ }
+    }
+    function friendlyError(err){
+      var raw = err && (err.message || String(err)) || '';
+      if(/unauthorized|401|403/i.test(raw)) return '密码错误，请检查后重试。如忘记密码，请联系管理员。';
+      if(/network|fetch|timeout/i.test(raw)) return '网络连接失败，请检查网络后重试。';
+      if(/500|502|503/i.test(raw)) return '服务暂时不可用，请稍后再试。';
+      return '登录失败：' + raw + '。如有疑问，请联系管理员。';
+    }
+    async function login(password){
+      var url = basePath() + '/routes/api/management/login';
+      var res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ key: String(password||''), ttl_hours: 2 }), credentials:'include' });
+      if(!res.ok){ try{ var j=await res.json(); throw new Error(j && (j.error||j.message)||'登录验证失败'); }catch(e){ throw new Error(e.message||'登录验证失败'); } }
+      // 仅依赖后端 HttpOnly 会话；不在前端写入同名鉴权 Cookie（避免安全边界下沉）
+      try { await res.json(); } catch(_) {}
+      return { ok: true };
+    }
+    form && form.addEventListener('submit', async function(e){
+      e.preventDefault(); clearError(); btn.disabled=true; btn.textContent='登录中...';
+      try{ var v=(pwd&&pwd.value)||''; if(!v.trim()){ showError('请输入管理密码'); btn.disabled=false; btn.textContent='登录'; return; }
+        await login(v.trim()); window.location.replace(basePath() + '/admin');
+      }catch(err){ showError(friendlyError(err)); btn.textContent='登录'; }
+      finally{ btn.disabled=false; }
+    });
+  })();
+  </script>
+</body>
+</html>

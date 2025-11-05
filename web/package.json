@@ -1,0 +1,25 @@
+{
+  "name": "gcli2api-admin-ui",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "clean": "rm -rf dist",
+    "test": "vitest -u",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest",
+    "build:ts": "tsc --project tsconfig.json",
+    "type:coverage": "type-coverage --project tsconfig.json --detail --at-least 85",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^1.5.0",
+    "vitest": "^1.5.0",
+    "jsdom": "^24.0.0",
+    "type-coverage": "^2.28.2",
+    "typescript": "^5.6.2"
+  }
+}

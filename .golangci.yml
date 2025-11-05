@@ -1,0 +1,115 @@
+# golangci-lint 配置文件
+# 用于 Go 代码质量检查
+
+run:
+  timeout: 5m
+  tests: true
+  modules-download-mode: readonly
+  skip-dirs:
+    - vendor
+    - node_modules
+
+linters:
+  enable:
+    # 基础检查
+    - errcheck      # 检查未处理的错误
+    - gosimple      # 简化代码建议
+    - govet         # Go 官方 vet 工具
+    - ineffassign   # 检测无效赋值
+    - staticcheck   # 静态分析
+    - unused        # 检测未使用的常量、变量、函数等
+    - gofmt         # 检查代码格式
+    - goimports     # 检查 import 顺序
+    - misspell      # 检查拼写错误
+    - revive        # 快速、可配置的 Go linter
+
+    # 安全和质量检查
+    - gosec         # 安全检查
+    - gocritic      # 代码质量检查
+    - bodyclose     # 检查 HTTP response body 是否关闭
+    - sqlclosecheck # 检查 SQL rows/stmt 是否关闭
+    - rowserrcheck  # 检查 SQL rows.Err() 是否检查
+    - exportloopref # 检查循环变量引用问题
+
+    # 代码复杂度和重复
+    - gocyclo       # 检查函数复杂度
+    - dupl          # 检查重复代码
+    - goconst       # 检查可以提取为常量的字符串
+    - unconvert     # 检查不必要的类型转换
+    - prealloc      # 检查可以预分配的切片
+
+linters-settings:
+  errcheck:
+    check-type-assertions: true
+    check-blank: true
+
+  gofmt:
+    simplify: true  # 使用 gofmt -s 简化代码
+
+  goimports:
+    local-prefixes: gcli2api-go  # 本地包前缀
+
+  govet:
+    enable-all: true
+    disable:
+      - shadow  # 变量遮蔽检查可能过于严格
+
+  gocyclo:
+    min-complexity: 15  # 函数复杂度阈值
+
+  dupl:
+    threshold: 100  # 重复代码行数阈值
+
+  goconst:
+    min-len: 3  # 最小字符串长度
+    min-occurrences: 3  # 最小出现次数
+
+  misspell:
+    locale: US
+
+  revive:
+    rules:
+      - name: blank-imports
+      - name: context-as-argument
+      - name: error-return
+      - name: error-strings
+      - name: error-naming
+      - name: exported
+      - name: var-naming
+      - name: indent-error-flow
+      - name: errorf
+
+  gosec:
+    excludes:
+      - G104  # 未检查错误（由 errcheck 处理）
+
+issues:
+  exclude-rules:
+    # 排除测试文件的某些检查
+    - path: _test\.go
+      linters:
+        - gocyclo
+        - errcheck
+        - dupl
+        - gosec
+        - goconst
+
+    # 排除生成的代码
+    - path: .*\.pb\.go
+      linters:
+        - all
+
+    # 排除 main 函数的某些检查
+    - path: cmd/
+      linters:
+        - gocyclo
+
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  exclude-use-default: false
+
+output:
+  format: colored-line-number
+  print-issued-lines: true
+  print-linter-name: true
+  sort-results: true

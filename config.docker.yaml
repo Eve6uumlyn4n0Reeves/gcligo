@@ -1,0 +1,42 @@
+# GCLI2API-Go Container Default Config
+# This file is baked into the Docker image as /app/config.yaml.
+# Override by mounting your own /app/config.yaml or via environment variables.
+
+# Ports
+openai_port: 8317            # OpenAI-compatible API (required)
+gemini_port: 0               # Disable Gemini native by default in image (set 8318 to enable)
+base_path: ""                # e.g. "/gcli" when behind reverse proxy sub-path
+
+# Authentication & Management
+management_key: "change-me-to-secure-key"   # REQUIRED for management APIs; override via env MANAGEMENT_KEY
+management_allow_remote: false               # Safer default; set true only behind a trusted proxy/network
+
+# Credentials & Storage (container-friendly paths)
+auth_dir: "/data/auths"
+storage_backend: "file"
+storage_base_dir: "/data/storage"
+
+# Upstream (single provider by design)
+upstream_provider: "gemini"  # Only gemini/code_assist supported
+
+# Feature toggles (safe defaults)
+retry_enabled: true
+anti_truncation_enabled: false
+anti_truncation_max: 3
+fake_streaming_enabled: false
+fake_streaming_chunk_size: 20
+fake_streaming_delay_ms: 50
+openai_images_include_mime: false
+
+# Admin UI
+web_admin_enabled: true
+
+# Logging (file path is no-op in container; prefer stdout)
+log_file_path: "./logs/gcli2api.log"
+log_max_size_mb: 100
+log_max_backups: 5
+
+# Optional backing stores (enable by env + compose)
+# redis_addr: "redis:6379"
+# mongodb_uri: "mongodb://mongo:27017"
+# postgres_dsn: "postgresql://user:password@postgres:5432/gcli2api"

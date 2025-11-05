@@ -1,0 +1,105 @@
+# EditorConfig 配置文件
+# 统一不同编辑器和 IDE 的代码风格
+# https://editorconfig.org
+
+# 顶级配置文件
+root = true
+
+# 所有文件的默认配置
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+# Go 源代码
+[*.go]
+indent_style = tab
+indent_size = 4
+
+# Makefile 必须使用 tab
+[Makefile]
+indent_style = tab
+
+[*.mk]
+indent_style = tab
+
+# Shell 脚本
+[*.sh]
+indent_size = 2
+indent_style = space
+
+# JavaScript/TypeScript
+[*.{js,jsx,ts,tsx,mjs,cjs}]
+indent_size = 2
+indent_style = space
+quote_type = single
+
+# JSON 文件
+[*.json]
+indent_size = 2
+indent_style = space
+
+# YAML 文件
+[*.{yml,yaml}]
+indent_size = 2
+indent_style = space
+
+# Markdown 文件
+[*.md]
+trim_trailing_whitespace = false
+indent_size = 2
+
+# HTML 文件
+[*.html]
+indent_size = 2
+indent_style = space
+
+# CSS/SCSS 文件
+[*.{css,scss,sass,less}]
+indent_size = 2
+indent_style = space
+
+# XML 文件
+[*.xml]
+indent_size = 2
+indent_style = space
+
+# Python 文件
+[*.py]
+indent_size = 4
+indent_style = space
+
+# SQL 文件
+[*.sql]
+indent_size = 2
+indent_style = space
+
+# Docker 文件
+[Dockerfile*]
+indent_size = 2
+indent_style = space
+
+# 配置文件
+[*.{toml,ini,conf}]
+indent_size = 2
+indent_style = space
+
+# 忽略某些文件的尾随空格检查
+[*.{md,txt}]
+trim_trailing_whitespace = false
+
+# 包管理器锁文件（不修改）
+[{package-lock.json,yarn.lock,pnpm-lock.yaml,go.sum}]
+insert_final_newline = false
+indent_size = unset
+indent_style = unset
+
+# 生成的文件（不修改）
+[*.{pb.go,generated.go}]
+insert_final_newline = false
+indent_size = unset
+indent_style = unset
+

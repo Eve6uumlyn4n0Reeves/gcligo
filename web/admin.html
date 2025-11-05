@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="asset-version" content="20251026">
+    <meta name="theme-color" content="#eeeeee">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'/%3E">
+    
+    <title>GCLI2API-Go 管理控制台</title>
+    
+    <!-- 关键资源预加载（使用绝对路径，避免 /admin 下相对解析成 /admin/*） -->
+    <link rel="preload" href="/admin.css?v=20251026" as="style">
+    <link rel="modulepreload" href="/admin.js?v=20251026">
+    <link rel="modulepreload" href="/dist/ui.js?v=20251026c">
+    <link rel="modulepreload" href="/dist/auth.js?v=20251026">
+    <link rel="modulepreload" href="/dist/api.js?v=20251026">
+    
+    <!-- 样式表（绝对路径） -->
+    <link rel="stylesheet" href="/admin.css?v=20251026">
+</head>
+<body>
+    <div class="container">
+        <div id="app-container">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>正在加载管理控制台...</p>
+                <p style="font-size:12px; color:#6b7280; margin-top:6px;">本实例已固定仅使用 <strong>Gemini Code Assist（geminicli 语义）</strong> 作为唯一上游。</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Container -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal()">&times;</span>
+            <div class="modal-header" id="modalTitle">Modal Title</div>
+            <div id="modalBody">Modal content</div>
+        </div>
+    </div>
+
+    <script type="module">
+      import { bootstrapAdmin } from '/dist/admin/bootstrap.js';
+      bootstrapAdmin().catch(err => console.error('Bootstrap failed:', err));
+    </script>
+    <script type="module">
+      import { initializeModuleLoading } from '/dist/admin/module-loader.js';
+      initializeModuleLoading();
+    </script>
+
+    <!-- Initialize UI utilities -->
+    <script type="module">
+      import {
+        closeModal,
+        openModal,
+        initializeEmojiStripping,
+        initializeGlobalErrorHandling,
+        renderBrowserNotSupportedError
+      } from '/dist/admin/ui-utils.js';
+
+      // 暴露全局函数
+      window.closeModal = closeModal;
+      window.openModal = openModal;
+
+      // 初始化 UI 功能
+      initializeEmojiStripping();
+      initializeGlobalErrorHandling();
+    </script>
+
+    <!-- Fallback for browsers without module support -->
+    <script nomodule>
+      (function() {
+        const container = document.getElementById('app-container');
+        if (container) {
+          container.innerHTML = `
+            <div class="card" style="text-align: center; padding: 60px 20px;">
+              <h2 style="color: #ef4444; margin-bottom: 20px;">浏览器不支持</h2>
+              <p style="color: #666; margin-bottom: 30px;">请使用支持ES6模块的现代浏览器访问此页面</p>
+              <p style="color: #999;">推荐使用最新版本的 Chrome、Firefox、Safari 或 Edge</p>
+            </div>
+          `;
+        }
+      })();
+    </script>
+</body>
+</html>

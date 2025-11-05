@@ -1,0 +1,7 @@
+version: '3.8'
+
+services:
+  gcli2api:
+    volumes:
+      - ./web:/app/web:ro
+

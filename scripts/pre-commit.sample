@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(git rev-parse --show-toplevel)"
+cd "$ROOT_DIR"
+
+echo "🧹 Running gofmt..."
+GO_FILES=$(git ls-files '*.go' || true)
+if [[ -n "${GO_FILES}" ]]; then
+  gofmt -w ${GO_FILES}
+fi
+
+if [[ -n "${GO_FILES}" ]]; then
+  echo "🔍 Checking gofmt diff..."
+  UNFORMATTED=$(gofmt -l ${GO_FILES} || true)
+  if [[ -n "${UNFORMATTED}" ]]; then
+    echo "The following Go files need formatting:"
+    echo "${UNFORMATTED}"
+    exit 1
+  fi
+fi
+
+echo "✅ go test ./..."
+GO_ENV= GOSUMDB=sum.golang.org go test ./...
+
+if command -v golangci-lint >/dev/null 2>&1; then
+  echo "🪪 golangci-lint run"
+  golangci-lint run
+else
+  echo "⚠️  golangci-lint not found; skipping lint."
+fi
+
+if [[ -d "${ROOT_DIR}/web" ]]; then
+  pushd "${ROOT_DIR}/web" >/dev/null
+
+  if [[ ! -d node_modules ]]; then
+    echo "⚠️  web/node_modules not found; please run npm install before committing."
+    exit 1
+  fi
+
+  echo "🧪 npm run lint"
+  npm run lint -- --max-warnings=0
+
+  echo "🧪 vitest run"
+  npx vitest run --runInBand
+
+  popd >/dev/null
+fi
+
+echo "✨ All pre-commit checks passed."

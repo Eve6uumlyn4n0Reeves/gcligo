@@ -1,0 +1,47 @@
+version: '3.8'
+
+# Development configuration - extends docker-compose.yml
+services:
+  gcli2api:
+    build:
+      context: .
+      target: development
+    volumes:
+      - .:/app
+      - /app/tmp
+    environment:
+      - DEBUG=true
+      - CGO_ENABLED=0
+    command: ["go", "run", "./cmd/server/main.go", "-config", "config.yaml", "-debug"]
+
+  # Development tools
+  adminer:
+    image: adminer:latest
+    container_name: gcli2api-adminer
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - ADMINER_DEFAULT_SERVER=postgres
+    depends_on:
+      - postgres
+    networks:
+      - gcli2api-network
+    profiles:
+      - dev-tools
+
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: gcli2api-redis-commander
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    depends_on:
+      - redis
+    networks:
+      - gcli2api-network
+    profiles:
+      - dev-tools
+

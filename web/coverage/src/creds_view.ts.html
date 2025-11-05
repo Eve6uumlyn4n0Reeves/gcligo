@@ -1,0 +1,721 @@
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Code coverage report for src/creds_view.ts</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../prettify.css" />
+    <link rel="stylesheet" href="../base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="../favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+    
+<body>
+<div class='wrapper'>
+    <div class='pad1'>
+        <h1><a href="../index.html">All files</a> / <a href="index.html">src</a> creds_view.ts</h1>
+        <div class='clearfix'>
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">72.16% </span>
+                <span class="quiet">Statements</span>
+                <span class='fraction'>153/212</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">64.28% </span>
+                <span class="quiet">Branches</span>
+                <span class='fraction'>27/42</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">54.54% </span>
+                <span class="quiet">Functions</span>
+                <span class='fraction'>6/11</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">72.16% </span>
+                <span class="quiet">Lines</span>
+                <span class='fraction'>153/212</span>
+            </div>
+        
+            
+        </div>
+        <p class="quiet">
+            Press <em>n</em> or <em>j</em> to go to the next uncovered block, <em>b</em>, <em>p</em> or <em>k</em> for the previous block.
+        </p>
+        <template id="filterTemplate">
+            <div class="quiet">
+                Filter:
+                <input type="search" id="fileSearch">
+            </div>
+        </template>
+    </div>
+    <div class='status-line medium'></div>
+    <pre><table class="coverage">
+<tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
+<a name='L2'></a><a href='#L2'>2</a>
+<a name='L3'></a><a href='#L3'>3</a>
+<a name='L4'></a><a href='#L4'>4</a>
+<a name='L5'></a><a href='#L5'>5</a>
+<a name='L6'></a><a href='#L6'>6</a>
+<a name='L7'></a><a href='#L7'>7</a>
+<a name='L8'></a><a href='#L8'>8</a>
+<a name='L9'></a><a href='#L9'>9</a>
+<a name='L10'></a><a href='#L10'>10</a>
+<a name='L11'></a><a href='#L11'>11</a>
+<a name='L12'></a><a href='#L12'>12</a>
+<a name='L13'></a><a href='#L13'>13</a>
+<a name='L14'></a><a href='#L14'>14</a>
+<a name='L15'></a><a href='#L15'>15</a>
+<a name='L16'></a><a href='#L16'>16</a>
+<a name='L17'></a><a href='#L17'>17</a>
+<a name='L18'></a><a href='#L18'>18</a>
+<a name='L19'></a><a href='#L19'>19</a>
+<a name='L20'></a><a href='#L20'>20</a>
+<a name='L21'></a><a href='#L21'>21</a>
+<a name='L22'></a><a href='#L22'>22</a>
+<a name='L23'></a><a href='#L23'>23</a>
+<a name='L24'></a><a href='#L24'>24</a>
+<a name='L25'></a><a href='#L25'>25</a>
+<a name='L26'></a><a href='#L26'>26</a>
+<a name='L27'></a><a href='#L27'>27</a>
+<a name='L28'></a><a href='#L28'>28</a>
+<a name='L29'></a><a href='#L29'>29</a>
+<a name='L30'></a><a href='#L30'>30</a>
+<a name='L31'></a><a href='#L31'>31</a>
+<a name='L32'></a><a href='#L32'>32</a>
+<a name='L33'></a><a href='#L33'>33</a>
+<a name='L34'></a><a href='#L34'>34</a>
+<a name='L35'></a><a href='#L35'>35</a>
+<a name='L36'></a><a href='#L36'>36</a>
+<a name='L37'></a><a href='#L37'>37</a>
+<a name='L38'></a><a href='#L38'>38</a>
+<a name='L39'></a><a href='#L39'>39</a>
+<a name='L40'></a><a href='#L40'>40</a>
+<a name='L41'></a><a href='#L41'>41</a>
+<a name='L42'></a><a href='#L42'>42</a>
+<a name='L43'></a><a href='#L43'>43</a>
+<a name='L44'></a><a href='#L44'>44</a>
+<a name='L45'></a><a href='#L45'>45</a>
+<a name='L46'></a><a href='#L46'>46</a>
+<a name='L47'></a><a href='#L47'>47</a>
+<a name='L48'></a><a href='#L48'>48</a>
+<a name='L49'></a><a href='#L49'>49</a>
+<a name='L50'></a><a href='#L50'>50</a>
+<a name='L51'></a><a href='#L51'>51</a>
+<a name='L52'></a><a href='#L52'>52</a>
+<a name='L53'></a><a href='#L53'>53</a>
+<a name='L54'></a><a href='#L54'>54</a>
+<a name='L55'></a><a href='#L55'>55</a>
+<a name='L56'></a><a href='#L56'>56</a>
+<a name='L57'></a><a href='#L57'>57</a>
+<a name='L58'></a><a href='#L58'>58</a>
+<a name='L59'></a><a href='#L59'>59</a>
+<a name='L60'></a><a href='#L60'>60</a>
+<a name='L61'></a><a href='#L61'>61</a>
+<a name='L62'></a><a href='#L62'>62</a>
+<a name='L63'></a><a href='#L63'>63</a>
+<a name='L64'></a><a href='#L64'>64</a>
+<a name='L65'></a><a href='#L65'>65</a>
+<a name='L66'></a><a href='#L66'>66</a>
+<a name='L67'></a><a href='#L67'>67</a>
+<a name='L68'></a><a href='#L68'>68</a>
+<a name='L69'></a><a href='#L69'>69</a>
+<a name='L70'></a><a href='#L70'>70</a>
+<a name='L71'></a><a href='#L71'>71</a>
+<a name='L72'></a><a href='#L72'>72</a>
+<a name='L73'></a><a href='#L73'>73</a>
+<a name='L74'></a><a href='#L74'>74</a>
+<a name='L75'></a><a href='#L75'>75</a>
+<a name='L76'></a><a href='#L76'>76</a>
+<a name='L77'></a><a href='#L77'>77</a>
+<a name='L78'></a><a href='#L78'>78</a>
+<a name='L79'></a><a href='#L79'>79</a>
+<a name='L80'></a><a href='#L80'>80</a>
+<a name='L81'></a><a href='#L81'>81</a>
+<a name='L82'></a><a href='#L82'>82</a>
+<a name='L83'></a><a href='#L83'>83</a>
+<a name='L84'></a><a href='#L84'>84</a>
+<a name='L85'></a><a href='#L85'>85</a>
+<a name='L86'></a><a href='#L86'>86</a>
+<a name='L87'></a><a href='#L87'>87</a>
+<a name='L88'></a><a href='#L88'>88</a>
+<a name='L89'></a><a href='#L89'>89</a>
+<a name='L90'></a><a href='#L90'>90</a>
+<a name='L91'></a><a href='#L91'>91</a>
+<a name='L92'></a><a href='#L92'>92</a>
+<a name='L93'></a><a href='#L93'>93</a>
+<a name='L94'></a><a href='#L94'>94</a>
+<a name='L95'></a><a href='#L95'>95</a>
+<a name='L96'></a><a href='#L96'>96</a>
+<a name='L97'></a><a href='#L97'>97</a>
+<a name='L98'></a><a href='#L98'>98</a>
+<a name='L99'></a><a href='#L99'>99</a>
+<a name='L100'></a><a href='#L100'>100</a>
+<a name='L101'></a><a href='#L101'>101</a>
+<a name='L102'></a><a href='#L102'>102</a>
+<a name='L103'></a><a href='#L103'>103</a>
+<a name='L104'></a><a href='#L104'>104</a>
+<a name='L105'></a><a href='#L105'>105</a>
+<a name='L106'></a><a href='#L106'>106</a>
+<a name='L107'></a><a href='#L107'>107</a>
+<a name='L108'></a><a href='#L108'>108</a>
+<a name='L109'></a><a href='#L109'>109</a>
+<a name='L110'></a><a href='#L110'>110</a>
+<a name='L111'></a><a href='#L111'>111</a>
+<a name='L112'></a><a href='#L112'>112</a>
+<a name='L113'></a><a href='#L113'>113</a>
+<a name='L114'></a><a href='#L114'>114</a>
+<a name='L115'></a><a href='#L115'>115</a>
+<a name='L116'></a><a href='#L116'>116</a>
+<a name='L117'></a><a href='#L117'>117</a>
+<a name='L118'></a><a href='#L118'>118</a>
+<a name='L119'></a><a href='#L119'>119</a>
+<a name='L120'></a><a href='#L120'>120</a>
+<a name='L121'></a><a href='#L121'>121</a>
+<a name='L122'></a><a href='#L122'>122</a>
+<a name='L123'></a><a href='#L123'>123</a>
+<a name='L124'></a><a href='#L124'>124</a>
+<a name='L125'></a><a href='#L125'>125</a>
+<a name='L126'></a><a href='#L126'>126</a>
+<a name='L127'></a><a href='#L127'>127</a>
+<a name='L128'></a><a href='#L128'>128</a>
+<a name='L129'></a><a href='#L129'>129</a>
+<a name='L130'></a><a href='#L130'>130</a>
+<a name='L131'></a><a href='#L131'>131</a>
+<a name='L132'></a><a href='#L132'>132</a>
+<a name='L133'></a><a href='#L133'>133</a>
+<a name='L134'></a><a href='#L134'>134</a>
+<a name='L135'></a><a href='#L135'>135</a>
+<a name='L136'></a><a href='#L136'>136</a>
+<a name='L137'></a><a href='#L137'>137</a>
+<a name='L138'></a><a href='#L138'>138</a>
+<a name='L139'></a><a href='#L139'>139</a>
+<a name='L140'></a><a href='#L140'>140</a>
+<a name='L141'></a><a href='#L141'>141</a>
+<a name='L142'></a><a href='#L142'>142</a>
+<a name='L143'></a><a href='#L143'>143</a>
+<a name='L144'></a><a href='#L144'>144</a>
+<a name='L145'></a><a href='#L145'>145</a>
+<a name='L146'></a><a href='#L146'>146</a>
+<a name='L147'></a><a href='#L147'>147</a>
+<a name='L148'></a><a href='#L148'>148</a>
+<a name='L149'></a><a href='#L149'>149</a>
+<a name='L150'></a><a href='#L150'>150</a>
+<a name='L151'></a><a href='#L151'>151</a>
+<a name='L152'></a><a href='#L152'>152</a>
+<a name='L153'></a><a href='#L153'>153</a>
+<a name='L154'></a><a href='#L154'>154</a>
+<a name='L155'></a><a href='#L155'>155</a>
+<a name='L156'></a><a href='#L156'>156</a>
+<a name='L157'></a><a href='#L157'>157</a>
+<a name='L158'></a><a href='#L158'>158</a>
+<a name='L159'></a><a href='#L159'>159</a>
+<a name='L160'></a><a href='#L160'>160</a>
+<a name='L161'></a><a href='#L161'>161</a>
+<a name='L162'></a><a href='#L162'>162</a>
+<a name='L163'></a><a href='#L163'>163</a>
+<a name='L164'></a><a href='#L164'>164</a>
+<a name='L165'></a><a href='#L165'>165</a>
+<a name='L166'></a><a href='#L166'>166</a>
+<a name='L167'></a><a href='#L167'>167</a>
+<a name='L168'></a><a href='#L168'>168</a>
+<a name='L169'></a><a href='#L169'>169</a>
+<a name='L170'></a><a href='#L170'>170</a>
+<a name='L171'></a><a href='#L171'>171</a>
+<a name='L172'></a><a href='#L172'>172</a>
+<a name='L173'></a><a href='#L173'>173</a>
+<a name='L174'></a><a href='#L174'>174</a>
+<a name='L175'></a><a href='#L175'>175</a>
+<a name='L176'></a><a href='#L176'>176</a>
+<a name='L177'></a><a href='#L177'>177</a>
+<a name='L178'></a><a href='#L178'>178</a>
+<a name='L179'></a><a href='#L179'>179</a>
+<a name='L180'></a><a href='#L180'>180</a>
+<a name='L181'></a><a href='#L181'>181</a>
+<a name='L182'></a><a href='#L182'>182</a>
+<a name='L183'></a><a href='#L183'>183</a>
+<a name='L184'></a><a href='#L184'>184</a>
+<a name='L185'></a><a href='#L185'>185</a>
+<a name='L186'></a><a href='#L186'>186</a>
+<a name='L187'></a><a href='#L187'>187</a>
+<a name='L188'></a><a href='#L188'>188</a>
+<a name='L189'></a><a href='#L189'>189</a>
+<a name='L190'></a><a href='#L190'>190</a>
+<a name='L191'></a><a href='#L191'>191</a>
+<a name='L192'></a><a href='#L192'>192</a>
+<a name='L193'></a><a href='#L193'>193</a>
+<a name='L194'></a><a href='#L194'>194</a>
+<a name='L195'></a><a href='#L195'>195</a>
+<a name='L196'></a><a href='#L196'>196</a>
+<a name='L197'></a><a href='#L197'>197</a>
+<a name='L198'></a><a href='#L198'>198</a>
+<a name='L199'></a><a href='#L199'>199</a>
+<a name='L200'></a><a href='#L200'>200</a>
+<a name='L201'></a><a href='#L201'>201</a>
+<a name='L202'></a><a href='#L202'>202</a>
+<a name='L203'></a><a href='#L203'>203</a>
+<a name='L204'></a><a href='#L204'>204</a>
+<a name='L205'></a><a href='#L205'>205</a>
+<a name='L206'></a><a href='#L206'>206</a>
+<a name='L207'></a><a href='#L207'>207</a>
+<a name='L208'></a><a href='#L208'>208</a>
+<a name='L209'></a><a href='#L209'>209</a>
+<a name='L210'></a><a href='#L210'>210</a>
+<a name='L211'></a><a href='#L211'>211</a>
+<a name='L212'></a><a href='#L212'>212</a>
+<a name='L213'></a><a href='#L213'>213</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import type { Credential } from './creds/types.js';
+import type { CredentialsManager } from './creds.js';
+&nbsp;
+export type CredentialHelpers = Pick&lt;
+  CredentialsManager,
+  'formatTimestamp' | 'normalizeTimestamp' | 'renderHealthBar'
+&gt;;
+&nbsp;
+const ERROR_CODE_DESCRIPTIONS: Record&lt;string, string&gt; = {
+  '429': '请求过多',
+  '403': '权限不足',
+  '401': '认证失败',
+  '500': '服务器错误',
+  '502': '网关错误',
+  '503': '服务不可用'
+};
+&nbsp;
+function escapeAttr(value: string): string {
+  return value.replace(/"/g, '&amp;quot;');
+}
+&nbsp;
+function friendlyErrorCodes(codes: Array&lt;string | number&gt;): string {
+  return codes
+    .map((code) =&gt; {
+      const key = String(code);
+      const desc = ERROR_CODE_DESCRIPTIONS[key];
+      return desc ? `${desc}(${key<span class="branch-0 cbranch-no" title="branch not covered" >})` : key;</span>
+    })
+    .join('、');
+}
+&nbsp;
+export function renderActionButtons(cred: Credential): string {
+  const id = cred.<span class="branch-0 cbranch-no" title="branch not covered" >filename ?? cred.<span class="branch-0 cbranch-no" title="branch not covered" >id ?? '</span>';</span>
+  if (cred.auto_banned) <span class="branch-0 cbranch-no" title="branch not covered" >{</span>
+<span class="cstat-no" title="statement not covered" >    return `</span>
+<span class="cstat-no" title="statement not covered" >      &lt;button class="btn btn-success btn-sm" aria-label="恢复凭证 ${id}" onclick="window.credsManager.recoverCredential('${id}')"&gt;恢复&lt;/button&gt;</span>
+<span class="cstat-no" title="statement not covered" >      &lt;button class="btn btn-danger btn-sm" aria-label="删除凭证 ${id}" onclick="window.credsManager.deleteCredential('${id}')"&gt;删除&lt;/button&gt;`;</span>
+<span class="cstat-no" title="statement not covered" >  }</span>
+  if (cred.disabled) {
+    return `
+      &lt;button class="btn btn-success btn-sm" aria-label="启用凭证 ${id}" onclick="window.credsManager.enableCredential('${id}')"&gt;启用&lt;/button&gt;
+      &lt;button class="btn btn-danger btn-sm" aria-label="删除凭证 ${id}" onclick="window.credsManager.deleteCredential('${id}')"&gt;删除&lt;/button&gt;`;
+  }
+  return `
+    &lt;button class="btn btn-warning btn-sm" aria-label="禁用凭证 ${id}" onclick="window.credsManager.disableCredential('${id}')"&gt;禁用&lt;/button&gt;
+    &lt;button class="btn btn-danger btn-sm" aria-label="删除凭证 ${id}" onclick="window.credsManager.deleteCredential('${id}')"&gt;删除&lt;/button&gt;`;
+}
+&nbsp;
+export function renderCredentialCard(cred: Credential, helpers: CredentialHelpers): string {
+  const lastSuccess = helpers.formatTimestamp(
+    helpers.normalizeTimestamp(cred.last_success_ts ?? cred.last_success)
+  );
+  const lastFailure = helpers.formatTimestamp(
+    helpers.normalizeTimestamp(cred.last_failure_ts ?? cred.last_failure),
+    '无记录'
+  );
+  const credKey = cred.<span class="branch-0 cbranch-no" title="branch not covered" >filename ?? cred.<span class="branch-0 cbranch-no" title="branch not covered" >id ?? c</span>red.<span class="branch-0 cbranch-no" title="branch not covered" >email ?? c</span>red.<span class="branch-0 cbranch-no" title="branch not covered" >project_id ?? '</span>';</span>
+  const safeKey = escapeAttr(String(credKey));
+&nbsp;
+  const statusClass = cred.auto_banned || cred.disabled ? 'status-disabled' : 'status-active';
+  const statusLabel = cred.<span class="branch-0 cbranch-no" title="branch not covered" >auto_banned</span>
+<span class="cstat-no" title="statement not covered" >    ? `已封禁: ${cred.banned_reason || '未知原因'}`</span>
+    : cred.disabled
+    ? '已禁用'
+    : '活跃';
+&nbsp;
+  const errorSection =
+    cred.error_codes &amp;&amp; cred.error_codes.length &gt; 0
+      ? `&lt;div class="credential-info" style="color:#ef4444;"&gt;最近错误: ${friendlyErrorCodes(cred.error_codes)}&lt;/div&gt;`
+      : '';
+&nbsp;
+  return `
+    &lt;div class="credential-card ${cred.disabled ? 'disabled' : ''}" data-cred-id="${safeKey}"&gt;
+      &lt;div class="credential-header"&gt;
+        &lt;div class="credential-name"&gt;${cred.<span class="branch-0 cbranch-no" title="branch not covered" >filename ?? safeKey}</span>&lt;/div&gt;
+        &lt;div class="credential-status ${statusClass}"&gt;
+          ${statusLabel}
+        &lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div class="credential-info"&gt;项目: ${cred.project_id ?? 'N/A'}&lt;/div&gt;
+      &lt;div class="credential-info"&gt;邮箱: ${cred.<span class="branch-0 cbranch-no" title="branch not covered" >email ?? 'N/A'}</span>&lt;/div&gt;
+      &lt;div class="credential-info"&gt;总调用: ${cred.total_calls ?? cred.total_requests ?? 0}&lt;/div&gt;
+      &lt;div class="credential-info"&gt;Gemini 2.5 Pro: ${cred.gemini_2_5_pro_calls ?? 0}&lt;/div&gt;
+      &lt;div class="credential-info"&gt;成功率: ${(((cred.success_rate ?? 0) * 100).toFixed(1))}%&lt;/div&gt;
+      &lt;div class="credential-info"&gt;失败权重: ${(cred.failure_weight ?? 0).toFixed(2)}&lt;/div&gt;
+      &lt;div class="credential-info"&gt;健康评分: ${(((cred.health_score ?? 0) * 100).toFixed(0))}%&lt;/div&gt;
+      &lt;div class="credential-info"&gt;最后成功: ${lastSuccess}&lt;/div&gt;
+      &lt;div class="credential-info"&gt;最后失败: ${lastFailure}&lt;/div&gt;
+      ${errorSection}
+      &lt;div class="credential-actions"&gt;${renderActionButtons(cred)}&lt;/div&gt;
+    &lt;/div&gt;`;
+}
+&nbsp;
+export <span class="fstat-no" title="function not covered" >function renderStatusBadge(cred: Credential): string {</span>
+<span class="cstat-no" title="statement not covered" >  if (cred.auto_banned) {</span>
+<span class="cstat-no" title="statement not covered" >    return `&lt;span class="status-badge status-disabled"&gt;已封禁: ${cred.banned_reason ?? '未知原因'}&lt;/span&gt;`;</span>
+<span class="cstat-no" title="statement not covered" >  }</span>
+<span class="cstat-no" title="statement not covered" >  if (cred.disabled) {</span>
+<span class="cstat-no" title="statement not covered" >    return `&lt;span class="status-badge status-disabled"&gt;已禁用&lt;/span&gt;`;</span>
+<span class="cstat-no" title="statement not covered" >  }</span>
+<span class="cstat-no" title="statement not covered" >  return `&lt;span class="status-badge status-active"&gt;活跃&lt;/span&gt;`;</span>
+<span class="cstat-no" title="statement not covered" >}</span>
+&nbsp;
+export <span class="fstat-no" title="function not covered" >function renderCredentialRow(cred: Credential, helpers: CredentialsManager): string {</span>
+<span class="cstat-no" title="statement not covered" >  const healthScore = (cred.health_score ?? 0) * 100;</span>
+<span class="cstat-no" title="statement not covered" >  const successRate = (cred.success_rate ?? 0) * 100;</span>
+<span class="cstat-no" title="statement not covered" >  return `</span>
+<span class="cstat-no" title="statement not covered" >    &lt;tr&gt;</span>
+<span class="cstat-no" title="statement not covered" >      &lt;td&gt;${cred.id ?? cred.filename ?? ''}&lt;/td&gt;</span>
+<span class="cstat-no" title="statement not covered" >      &lt;td&gt;${cred.project_id ?? '-'}&lt;/td&gt;</span>
+<span class="cstat-no" title="statement not covered" >      &lt;td&gt;${cred.email ?? '-'}&lt;/td&gt;</span>
+<span class="cstat-no" title="statement not covered" >      &lt;td&gt;${renderStatusBadge(cred)}&lt;/td&gt;</span>
+<span class="cstat-no" title="statement not covered" >      &lt;td&gt;${helpers.renderHealthBar(healthScore)}&lt;/td&gt;</span>
+<span class="cstat-no" title="statement not covered" >      &lt;td&gt;${cred.total_requests ?? cred.total_calls ?? 0}&lt;/td&gt;</span>
+<span class="cstat-no" title="statement not covered" >      &lt;td&gt;${successRate.toFixed(1)}%&lt;/td&gt;</span>
+<span class="cstat-no" title="statement not covered" >      &lt;td&gt;${helpers.formatTimestamp(helpers.normalizeTimestamp(cred.last_success_ts ?? cred.last_success))}&lt;/td&gt;</span>
+<span class="cstat-no" title="statement not covered" >      &lt;td&gt;${helpers.formatTimestamp(helpers.normalizeTimestamp(cred.last_failure_ts ?? cred.last_failure), '无记录')}&lt;/td&gt;</span>
+<span class="cstat-no" title="statement not covered" >      &lt;td&gt;${renderActionButtons(cred)}&lt;/td&gt;</span>
+<span class="cstat-no" title="statement not covered" >    &lt;/tr&gt;`;</span>
+<span class="cstat-no" title="statement not covered" >}</span>
+&nbsp;
+export <span class="fstat-no" title="function not covered" >function renderPager(page: number, pages: number, size: number, total: number): string {</span>
+<span class="cstat-no" title="statement not covered" >  return `</span>
+<span class="cstat-no" title="statement not covered" >    &lt;div style="display:flex; gap:8px; align-items:center; margin: 8px 0;"&gt;</span>
+<span class="cstat-no" title="statement not covered" >      &lt;button class="btn" aria-label="上一页" onclick="window.credsManager.setPage(${Math.max(1, page - 1)})"&gt;上一页&lt;/button&gt;</span>
+<span class="cstat-no" title="statement not covered" >      &lt;span style="color:#666;"&gt;第 ${page}/${pages} 页（共 ${total} 条）&lt;/span&gt;</span>
+<span class="cstat-no" title="statement not covered" >      &lt;button class="btn" aria-label="下一页" onclick="window.credsManager.setPage(${Math.min(pages, page + 1)})"&gt;下一页&lt;/button&gt;</span>
+<span class="cstat-no" title="statement not covered" >      &lt;label style="margin-left:8px; color:#666;"&gt;每页</span>
+<span class="cstat-no" title="statement not covered" >        &lt;select onchange="window.credsManager.setPageSize(this.value)"&gt;</span>
+<span class="cstat-no" title="statement not covered" >          &lt;option ${size === 10 ? 'selected' : ''}&gt;10&lt;/option&gt;</span>
+<span class="cstat-no" title="statement not covered" >          &lt;option ${size === 20 ? 'selected' : ''}&gt;20&lt;/option&gt;</span>
+<span class="cstat-no" title="statement not covered" >          &lt;option ${size === 50 ? 'selected' : ''}&gt;50&lt;/option&gt;</span>
+<span class="cstat-no" title="statement not covered" >        &lt;/select&gt;</span>
+<span class="cstat-no" title="statement not covered" >      &lt;/label&gt;</span>
+<span class="cstat-no" title="statement not covered" >    &lt;/div&gt;`;</span>
+<span class="cstat-no" title="statement not covered" >}</span>
+&nbsp;
+export <span class="fstat-no" title="function not covered" >function renderCredentialsList(manager: CredentialsManager): string {</span>
+<span class="cstat-no" title="statement not covered" >  const total = manager.getFilteredCredentials().length;</span>
+<span class="cstat-no" title="statement not covered" >  const pager = renderPager(manager.page, Math.max(1, Math.ceil(total / (manager.pageSize || 20))), manager.pageSize, total);</span>
+<span class="cstat-no" title="statement not covered" >  return `${pager}&lt;div class="credentials-grid" aria-live="polite"&gt;&lt;/div&gt;${pager}`;</span>
+<span class="cstat-no" title="statement not covered" >}</span>
+&nbsp;
+export function populateCredentialGrid(
+  gridEl: Element | null,
+  items: Credential[],
+  manager: CredentialsManager
+): void {
+  if (!gridEl) <span class="branch-0 cbranch-no" title="branch not covered" >return;</span>
+  const arr = Array.isArray(items) ? items.slice(<span class="branch-0 cbranch-no" title="branch not covered" >) : [];</span>
+  gridEl.innerHTML = '';
+  if (arr.length === 0) <span class="branch-0 cbranch-no" title="branch not covered" >return;</span>
+  const chunkSize = 12;
+  let index = 0;
+  const renderChunk = () =&gt; {
+    const frag = document.createDocumentFragment();
+    for (let i = 0; i &lt; chunkSize &amp;&amp; index &lt; arr.length; i += 1, index += 1) {
+      const wrapper = document.createElement('div');
+      wrapper.innerHTML = renderCredentialCard(arr[index], manager);
+      const card = wrapper.firstElementChild;
+      if (card) frag.appendChild(card);
+    }
+    gridEl.appendChild(frag);
+    if (index &lt; arr.length) <span class="branch-0 cbranch-no" title="branch not covered" >requestAnimationFrame(renderChunk);</span>
+  };
+  requestAnimationFrame(renderChunk);
+}
+&nbsp;
+export <span class="fstat-no" title="function not covered" >function renderCredentialsTable(manager: CredentialsManager): string {</span>
+<span class="cstat-no" title="statement not covered" >  const credentials: Credential[] = manager.getCredentials?.() ?? [];</span>
+<span class="cstat-no" title="statement not covered" >  if (credentials.length === 0) return '&lt;p&gt;暂无凭证&lt;/p&gt;';</span>
+<span class="cstat-no" title="statement not covered" >  return `</span>
+<span class="cstat-no" title="statement not covered" >    &lt;table class="credential-table"&gt;</span>
+<span class="cstat-no" title="statement not covered" >      &lt;thead&gt;</span>
+<span class="cstat-no" title="statement not covered" >        &lt;tr&gt;&lt;th&gt;ID&lt;/th&gt;&lt;th&gt;项目ID&lt;/th&gt;&lt;th&gt;邮箱&lt;/th&gt;&lt;th&gt;状态&lt;/th&gt;&lt;th&gt;健康评分&lt;/th&gt;&lt;th&gt;请求数&lt;/th&gt;&lt;th&gt;成功率&lt;/th&gt;&lt;th&gt;最后成功&lt;/th&gt;&lt;th&gt;最后失败&lt;/th&gt;&lt;th&gt;操作&lt;/th&gt;&lt;/tr&gt;</span>
+<span class="cstat-no" title="statement not covered" >      &lt;/thead&gt;</span>
+<span class="cstat-no" title="statement not covered" >      &lt;tbody&gt;</span>
+<span class="cstat-no" title="statement not covered" >        ${credentials.map((cred) =&gt; renderCredentialRow(cred, manager)).join('')}</span>
+<span class="cstat-no" title="statement not covered" >      &lt;/tbody&gt;</span>
+<span class="cstat-no" title="statement not covered" >    &lt;/table&gt;`;</span>
+<span class="cstat-no" title="statement not covered" >}</span>
+&nbsp;
+declare global {
+  interface Window {
+    credsViewRenderCredentialsList?: (manager: CredentialsManager) =&gt; string;
+    credsViewPopulateCredentialGrid?: (
+      grid: Element | null,
+      items: Credential[],
+      manager: CredentialsManager
+    ) =&gt; void;
+    credsViewRenderPager?: (page: number, pages: number, size: number, total: number) =&gt; string;
+    credsViewRenderCredentialsTable?: (manager: CredentialsManager) =&gt; string;
+    credsViewRenderCredentialRow?: (cred: Credential, manager: CredentialsManager) =&gt; string;
+  }
+}
+&nbsp;
+window.credsViewRenderCredentialsList = renderCredentialsList;
+window.credsViewPopulateCredentialGrid = populateCredentialGrid;
+window.credsViewRenderPager = renderPager;
+window.credsViewRenderCredentialsTable = renderCredentialsTable;
+window.credsViewRenderCredentialRow = renderCredentialRow;
+&nbsp;
+export default {
+  renderActionButtons,
+  renderCredentialCard,
+  renderCredentialsList,
+  populateCredentialGrid,
+  renderCredentialsTable,
+  renderCredentialRow,
+  renderStatusBadge,
+  renderPager
+};
+&nbsp;</pre></td></tr></table></pre>
+
+                <div class='push'></div><!-- for sticky footer -->
+            </div><!-- /wrapper -->
+            <div class='footer quiet pad2 space-top1 center small'>
+                Code coverage generated by
+                <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
+                at 2025-11-05T02:42:17.402Z
+            </div>
+        <script src="../prettify.js"></script>
+        <script>
+            window.onload = function () {
+                prettyPrint();
+            };
+        </script>
+        <script src="../sorter.js"></script>
+        <script src="../block-navigation.js"></script>
+    </body>
+</html>
+    

@@ -1,0 +1,24 @@
+# Go build artifacts
+/build/
+/dist/
+/coverage.*
+/gcli2api
+gcli2api-go
+/.gocache/
+/.gomodcache/
+
+# Local runtime data
+/config.yaml
+/auths/
+/data/
+/logs/
+
+# Node / frontend caches
+/node_modules/
+/web/node_modules/
+/web/.cache/
+/web/dist/
+
+# OS / editor cruft
+.DS_Store
+*.swp

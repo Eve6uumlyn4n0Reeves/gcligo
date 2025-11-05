@@ -1,0 +1,124 @@
+version: '3.8'
+
+services:
+  # Main application
+  gcli2api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: gcli2api-go
+    restart: unless-stopped
+    ports:
+      - "8317:8317"  # OpenAI API port
+    volumes:
+      - ./config.yaml:/app/config.yaml:ro
+      - ./data/auths:/data/auths
+      - ./data/storage:/data/storage
+      - ./logs:/app/logs
+    environment:
+      - MANAGEMENT_KEY=${MANAGEMENT_KEY:-change-me-to-secure-key}
+      - DEBUG=${DEBUG:-false}
+      # Storage backend selection (file|redis|mongo|postgres)
+      - STORAGE_BACKEND=${STORAGE_BACKEND:-file}
+      # Optional Redis DSN when STORAGE_BACKEND=redis
+      - REDIS_ADDR=${REDIS_ADDR:-redis:6379}
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+      - REDIS_DB=${REDIS_DB:-0}
+      # Optional PostgreSQL DSN when STORAGE_BACKEND=postgres
+      - POSTGRES_DSN=${POSTGRES_DSN:-}
+    networks:
+      - gcli2api-network
+
+  # Redis (optional storage backend)
+  redis:
+    image: redis:7-alpine
+    container_name: gcli2api-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-}
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - gcli2api-network
+    profiles:
+      - with-redis
+
+  # PostgreSQL (optional storage backend)
+  postgres:
+    image: postgres:16-alpine
+    container_name: gcli2api-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-gcli2api}
+      - POSTGRES_USER=${POSTGRES_USER:-gcli2api}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-gcli2api_password}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-gcli2api}"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - gcli2api-network
+    profiles:
+      - with-postgres
+
+  # Prometheus (optional monitoring)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: gcli2api-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    networks:
+      - gcli2api-network
+    profiles:
+      - with-monitoring
+
+  # Grafana (optional dashboards)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: gcli2api-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - gcli2api-network
+    profiles:
+      - with-monitoring
+
+volumes:
+  redis-data:
+    driver: local
+  postgres-data:
+    driver: local
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
+
+networks:
+  gcli2api-network:
+    driver: bridge

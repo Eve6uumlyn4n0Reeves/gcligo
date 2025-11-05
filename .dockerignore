@@ -1,0 +1,14 @@
+.git
+.gitignore
+.github
+.gocache
+.gomodcache
+build
+coverage.*
+gcli2api
+node_modules
+auths
+data
+logs
+scripts/check_build.sh
+.DS_Store

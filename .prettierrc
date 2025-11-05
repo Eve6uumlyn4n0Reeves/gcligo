@@ -1,0 +1,35 @@
+{
+  "semi": true,
+  "trailingComma": "es5",
+  "singleQuote": true,
+  "printWidth": 100,
+  "tabWidth": 2,
+  "useTabs": false,
+  "arrowParens": "always",
+  "endOfLine": "lf",
+  "bracketSpacing": true,
+  "bracketSameLine": false,
+  "overrides": [
+    {
+      "files": "*.go",
+      "options": {
+        "tabWidth": 4,
+        "useTabs": true
+      }
+    },
+    {
+      "files": ["*.yml", "*.yaml"],
+      "options": {
+        "tabWidth": 2,
+        "useTabs": false
+      }
+    },
+    {
+      "files": "Makefile",
+      "options": {
+        "useTabs": true
+      }
+    }
+  ]
+}
+
