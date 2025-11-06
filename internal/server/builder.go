@@ -36,9 +36,11 @@ type Dependencies struct {
 // BuildEngines constructs OpenAI 和 Gemini 的 Gin 引擎，并返回共享的路由策略实例。
 func BuildEngines(cfg *config.Config, deps Dependencies) (*gin.Engine, *gin.Engine, *route.Strategy) {
 	// Safety: when remote management is enabled, never allow upstream header passthrough
-	if cfg.Security.ManagementAllowRemote && cfg.Security.HeaderPassThrough {
-		log.Warn("ManagementAllowRemote=true -> forcing HeaderPassThrough=false for safety")
+	if cfg.Security.ManagementAllowRemote && cfg.Security.HeaderPassthroughConfig.Enabled {
+		log.Warn("ManagementAllowRemote=true -> forcing HeaderPassthrough=false for safety")
+		cfg.Security.HeaderPassthroughConfig.Enabled = false
 		cfg.Security.HeaderPassThrough = false
+		cfg.HeaderPassThrough = false
 	}
 	// Disable routing debug headers in production-like mode for safety
 	if !cfg.Security.Debug && cfg.Routing.DebugHeaders {

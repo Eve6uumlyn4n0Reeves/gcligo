@@ -2,6 +2,7 @@ package server
 
 import (
 	"gcli2api-go/internal/config"
+	common "gcli2api-go/internal/handlers/common"
 	gh "gcli2api-go/internal/handlers/gemini"
 	mw "gcli2api-go/internal/middleware"
 	route "gcli2api-go/internal/upstream/strategy"
@@ -33,7 +34,8 @@ func RegisterGeminiRoutes(root *gin.RouterGroup, cfg *config.Config, deps Depend
 		v1.GET("/models/:id", geminiHandler.GetModel)
 		// Gin 不支持同一段内混合路径参数与字面冒号，使用尾部 *action 分发
 		v1.POST("/models/:model/*action", func(c *gin.Context) {
-			switch c.Param("action") {
+			action := c.Param("action")
+			switch action {
 			case ":generateContent":
 				geminiHandler.GenerateContent(c)
 			case ":streamGenerateContent":
@@ -41,7 +43,7 @@ func RegisterGeminiRoutes(root *gin.RouterGroup, cfg *config.Config, deps Depend
 			case ":countTokens":
 				geminiHandler.CountTokens(c)
 			default:
-				c.JSON(404, gin.H{"error": "unknown action"})
+				common.AbortWithError(c, 404, "invalid_action", "unknown action: "+action)
 			}
 		})
 	}

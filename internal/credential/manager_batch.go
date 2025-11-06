@@ -44,6 +44,8 @@ func (m *Manager) BatchEnableCredentials(ctx context.Context, credIDs []string) 
 	for _, cred := range targets {
 		m.persistCredentialState(cred, true)
 		m.emitCredentialEvent("enabled", cred.Clone())
+		// Trigger cache invalidation hooks
+		m.triggerInvalidation(cred.ID, "credential_enabled")
 	}
 
 	log.Infof("Batch enable completed: total=%d success=%d failure=%d", len(credIDs), countBatchSuccess(results), countBatchFailures(results))
@@ -71,6 +73,8 @@ func (m *Manager) BatchDisableCredentials(ctx context.Context, credIDs []string)
 	for _, cred := range targets {
 		m.persistCredentialState(cred, true)
 		m.emitCredentialEvent("disabled", cred.Clone())
+		// Trigger cache invalidation hooks
+		m.triggerInvalidation(cred.ID, "credential_disabled")
 	}
 
 	log.Infof("Batch disable completed: total=%d success=%d failure=%d", len(credIDs), countBatchSuccess(results), countBatchFailures(results))

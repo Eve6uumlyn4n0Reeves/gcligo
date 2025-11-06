@@ -1,6 +1,7 @@
 package logging
 
 import (
+	"errors"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -11,14 +12,24 @@ import (
 
 // ✅ WebSocketLogger broadcasts log messages to connected WebSocket clients
 type WebSocketLogger struct {
-	clients    map[*websocket.Conn]bool
-	broadcast  chan LogMessage
-	mu         sync.RWMutex
-	stopCh     chan struct{}
-	history    []LogMessage
-	historyMu  sync.RWMutex
-	seq        uint64
-	historyCap int
+	clients         map[*websocket.Conn]*clientInfo
+	broadcast       chan LogMessage
+	mu              sync.RWMutex
+	stopCh          chan struct{}
+	history         []LogMessage
+	historyMu       sync.RWMutex
+	seq             uint64
+	historyCap      int
+	maxConnections  int
+	idleTimeout     time.Duration
+	cleanupInterval time.Duration
+}
+
+// clientInfo stores metadata about a WebSocket client
+type clientInfo struct {
+	conn         *websocket.Conn
+	lastActivity time.Time
+	connected    time.Time
 }
 
 // LogMessage represents a log message
@@ -47,31 +58,52 @@ func GetWSLogger() *WebSocketLogger {
 // NewWebSocketLogger creates a new WebSocket logger
 func NewWebSocketLogger() *WebSocketLogger {
 	return &WebSocketLogger{
-		clients:    make(map[*websocket.Conn]bool),
-		broadcast:  make(chan LogMessage, 100),
-		stopCh:     make(chan struct{}),
-		history:    make([]LogMessage, 0, 500),
-		historyCap: 500,
+		clients:         make(map[*websocket.Conn]*clientInfo),
+		broadcast:       make(chan LogMessage, 100),
+		stopCh:          make(chan struct{}),
+		history:         make([]LogMessage, 0, 500),
+		historyCap:      500,
+		maxConnections:  100,                // Default max connections
+		idleTimeout:     30 * time.Minute,   // Default idle timeout
+		cleanupInterval: 2 * time.Minute,    // Default cleanup interval
 	}
 }
 
 // Start starts the WebSocket logger broadcast service
 func (wsl *WebSocketLogger) Start() {
+	// Broadcast goroutine
 	go func() {
 		for {
 			select {
 			case message := <-wsl.broadcast:
 				wsl.mu.RLock()
-				for client := range wsl.clients {
+				for conn, info := range wsl.clients {
 					go func(c *websocket.Conn, msg LogMessage) {
 						if err := c.WriteJSON(msg); err != nil {
 							log.Debugf("Error writing to WebSocket client: %v", err)
 							wsl.RemoveClient(c)
 						}
-					}(client, message)
+					}(conn, message)
+					// Update last activity
+					info.lastActivity = time.Now()
 				}
 				wsl.mu.RUnlock()
 
+			case <-wsl.stopCh:
+				return
+			}
+		}
+	}()
+
+	// Cleanup goroutine
+	go func() {
+		ticker := time.NewTicker(wsl.cleanupInterval)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ticker.C:
+				wsl.cleanupDeadConnections()
 			case <-wsl.stopCh:
 				return
 			}
@@ -86,31 +118,93 @@ func (wsl *WebSocketLogger) Stop() {
 	wsl.mu.Lock()
 	defer wsl.mu.Unlock()
 
-	for client := range wsl.clients {
-		client.Close()
+	for conn := range wsl.clients {
+		conn.Close()
 	}
-	wsl.clients = make(map[*websocket.Conn]bool)
+	wsl.clients = make(map[*websocket.Conn]*clientInfo)
 }
 
 // AddClient adds a WebSocket client
-func (wsl *WebSocketLogger) AddClient(conn *websocket.Conn) {
+func (wsl *WebSocketLogger) AddClient(conn *websocket.Conn) error {
 	wsl.mu.Lock()
 	defer wsl.mu.Unlock()
 
-	wsl.clients[conn] = true
+	// Check max connections
+	if len(wsl.clients) >= wsl.maxConnections {
+		log.Warnf("WebSocket connection limit reached (%d), rejecting new connection", wsl.maxConnections)
+		return ErrMaxConnectionsReached
+	}
+
+	now := time.Now()
+	wsl.clients[conn] = &clientInfo{
+		conn:         conn,
+		lastActivity: now,
+		connected:    now,
+	}
 	log.Infof("WebSocket client connected (total: %d)", len(wsl.clients))
+	return nil
 }
+
+var ErrMaxConnectionsReached = errors.New("maximum WebSocket connections reached")
 
 // RemoveClient removes a WebSocket client
 func (wsl *WebSocketLogger) RemoveClient(conn *websocket.Conn) {
 	wsl.mu.Lock()
 	defer wsl.mu.Unlock()
 
-	if wsl.clients[conn] {
+	if _, exists := wsl.clients[conn]; exists {
 		delete(wsl.clients, conn)
 		conn.Close()
 		log.Infof("WebSocket client disconnected (remaining: %d)", len(wsl.clients))
 	}
+}
+
+// cleanupDeadConnections removes idle connections
+func (wsl *WebSocketLogger) cleanupDeadConnections() {
+	wsl.mu.Lock()
+	defer wsl.mu.Unlock()
+
+	now := time.Now()
+	toRemove := make([]*websocket.Conn, 0)
+
+	for conn, info := range wsl.clients {
+		// Check if connection is idle
+		if now.Sub(info.lastActivity) > wsl.idleTimeout {
+			toRemove = append(toRemove, conn)
+			log.Infof("Removing idle WebSocket connection (idle for %v)", now.Sub(info.lastActivity))
+		}
+	}
+
+	// Remove idle connections
+	for _, conn := range toRemove {
+		delete(wsl.clients, conn)
+		conn.Close()
+	}
+
+	if len(toRemove) > 0 {
+		log.Infof("Cleaned up %d idle WebSocket connections (remaining: %d)", len(toRemove), len(wsl.clients))
+	}
+}
+
+// GetConnectionCount returns the current number of connected clients
+func (wsl *WebSocketLogger) GetConnectionCount() int {
+	wsl.mu.RLock()
+	defer wsl.mu.RUnlock()
+	return len(wsl.clients)
+}
+
+// SetMaxConnections sets the maximum number of concurrent connections
+func (wsl *WebSocketLogger) SetMaxConnections(max int) {
+	wsl.mu.Lock()
+	defer wsl.mu.Unlock()
+	wsl.maxConnections = max
+}
+
+// SetIdleTimeout sets the idle timeout duration
+func (wsl *WebSocketLogger) SetIdleTimeout(timeout time.Duration) {
+	wsl.mu.Lock()
+	defer wsl.mu.Unlock()
+	wsl.idleTimeout = timeout
 }
 
 // BroadcastLog broadcasts a log message to all connected clients

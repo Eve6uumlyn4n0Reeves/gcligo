@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/alicebob/miniredis/v2 v2.35.0
-	github.com/fsnotify/fsnotify v1.7.0
+	github.com/fsnotify/fsnotify v1.9.0
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-git/go-git/v5 v5.11.0
 	github.com/golang-migrate/migrate/v4 v4.17.0

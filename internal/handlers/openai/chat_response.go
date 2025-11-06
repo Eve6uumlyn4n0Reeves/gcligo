@@ -14,6 +14,7 @@ import (
 	mw "gcli2api-go/internal/middleware"
 	"gcli2api-go/internal/models"
 	upstream "gcli2api-go/internal/upstream"
+	"gcli2api-go/internal/usage"
 	"github.com/gin-gonic/gin"
 )
 
@@ -27,11 +28,15 @@ func (h *Handler) completeChat(c *gin.Context, req *chatRequestContext, usedCred
 	}
 	body, err := upstream.ReadAll(resp)
 	if err != nil {
+		if cred := *usedCred; cred != nil {
+			h.recordCredentialUsage(cred.ID, usedModel, nil, false)
+		}
 		return newChatError(http.StatusBadGateway, err.Error(), "upstream_error")
 	}
 	if resp != nil && resp.StatusCode >= 400 {
 		if cred := *usedCred; cred != nil {
 			common.MarkCredentialFailure(h.credMgr, h.router, cred, "upstream_error", resp.StatusCode)
+			h.recordCredentialUsage(cred.ID, usedModel, nil, false)
 		}
 		return newChatErrorWithBody(http.StatusBadGateway, "upstream error", "upstream_error", body)
 	}
@@ -143,6 +148,14 @@ func (h *Handler) completeChat(c *gin.Context, req *chatRequestContext, usedCred
 
 	if cred := *usedCred; cred != nil {
 		common.MarkCredentialSuccess(h.credMgr, h.router, cred, http.StatusOK)
+		// Record successful request with token usage
+		tokens := &usage.TokenUsage{
+			InputTokens:     totalPrompt,
+			OutputTokens:    totalCompletion,
+			ReasoningTokens: reasoningTokens,
+			TotalTokens:     totalPrompt + totalCompletion + reasoningTokens,
+		}
+		h.recordCredentialUsage(cred.ID, usedModel, tokens, true)
 	}
 
 	c.JSON(http.StatusOK, gin.H{

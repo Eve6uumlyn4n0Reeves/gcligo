@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"gcli2api-go/internal/antitrunc"
 	"gcli2api-go/internal/credential"
 	"gcli2api-go/internal/models"
 	tr "gcli2api-go/internal/translator"
@@ -13,12 +14,13 @@ import (
 )
 
 type chatRequestContext struct {
-	raw       map[string]any
-	gemReq    map[string]any
-	rawJSON   []byte
-	model     string
-	baseModel string
-	stream    bool
+	raw           map[string]any
+	gemReq        map[string]any
+	rawJSON       []byte
+	model         string
+	baseModel     string
+	stream        bool
+	regexReplacer *antitrunc.RegexReplacer
 }
 
 func (ctx *chatRequestContext) upstreamPayload(project string) []byte {
@@ -28,6 +30,8 @@ func (ctx *chatRequestContext) upstreamPayload(project string) []byte {
 		"request": ctx.gemReq,
 	}
 	b, _ := json.Marshal(payload)
+	// Apply regex replacements if configured
+	b = antitrunc.ApplyRegexReplacements(b, ctx.regexReplacer)
 	return b
 }
 
@@ -64,6 +68,9 @@ func buildChatRequest(h *Handler, c *gin.Context) (*chatRequestContext, *chatErr
 	c.Set("model", model)
 	c.Set("base_model", baseModel)
 
+	// Inject compatibility mode flag for translator
+	raw["_compatibility_mode"] = h.cfg.CompatibilityMode
+
 	rawJSON, _ := json.Marshal(raw)
 	reqJSON := tr.OpenAIToGeminiRequest(baseModel, rawJSON, stream)
 
@@ -76,12 +83,13 @@ func buildChatRequest(h *Handler, c *gin.Context) (*chatRequestContext, *chatErr
 	mergeToolResponses(raw, gemReq)
 
 	return &chatRequestContext{
-		raw:       raw,
-		gemReq:    gemReq,
-		rawJSON:   rawJSON,
-		model:     model,
-		baseModel: baseModel,
-		stream:    stream,
+		raw:           raw,
+		gemReq:        gemReq,
+		rawJSON:       rawJSON,
+		model:         model,
+		baseModel:     baseModel,
+		stream:        stream,
+		regexReplacer: h.regexReplacer,
 	}, nil
 }
 

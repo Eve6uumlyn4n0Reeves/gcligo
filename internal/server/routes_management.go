@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"gcli2api-go/internal/antitrunc"
 	"gcli2api-go/internal/config"
 	enhmgmt "gcli2api-go/internal/handlers/management"
 	"gcli2api-go/internal/logging"
@@ -30,12 +31,15 @@ func registerManagementRoutes2(root *gin.RouterGroup, cfg *config.Config, deps D
 		return
 	}
 	mg := root.Group("/routes/api/management")
-	mg.Use(managementRemoteGuard("/routes/api/management", cfg))
-	if cfg.Security.ManagementReadOnly {
-		mg.Use(managementReadOnlyGuard())
-	}
+    mg.Use(managementRemoteGuard("/routes/api/management", cfg))
+    if cfg.Security.ManagementReadOnly {
+        mg.Use(managementReadOnlyGuard())
+    }
 
-	// Auth: cookie session or management key/hash
+	// Create management auth config for read/write separation
+	authConfig := NewManagementAuthConfig(cfg)
+
+	// Auth: cookie session or management key/hash or read-only key
 	mAuth := mw.AuthConfig{
 		AllowMultipleSources: false,
 		AcceptCookieName:     "mgmt_session",
@@ -43,17 +47,31 @@ func registerManagementRoutes2(root *gin.RouterGroup, cfg *config.Config, deps D
 			if enhancedHandler != nil && enhancedHandler.ValidateToken(key) {
 				return true
 			}
-			return config.CheckManagementKey(cfg, key)
+			// Check admin or read-only key
+			return authConfig.ValidateToken(key) != AuthLevelNone
 		},
 	}
-	mg.Use(func(c *gin.Context) {
-		p := c.Request.URL.Path
-		if c.Request.Method == http.MethodPost && (strings.HasSuffix(p, "/login") || strings.HasSuffix(p, "/logout")) {
-			c.Next()
-			return
-		}
-		mw.UnifiedAuth(mAuth)(c)
-	})
+    mg.Use(func(c *gin.Context) {
+        p := c.Request.URL.Path
+        if c.Request.Method == http.MethodPost && (strings.HasSuffix(p, "/login") || strings.HasSuffix(p, "/logout")) {
+            c.Next()
+            return
+        }
+        mw.UnifiedAuth(mAuth)(c)
+
+        // After auth, check if write operation requires admin privileges
+        if isWriteOperation(c.Request.Method, c.Request.URL.Path, &cfg.Security) {
+            token := ExtractToken(c)
+            level := authConfig.ValidateToken(token)
+            if level == AuthLevelReadOnly {
+                c.JSON(http.StatusForbidden, gin.H{
+                    "error": "Read-only access: write operations not permitted",
+                })
+                c.Abort()
+                return
+            }
+        }
+    })
 
 	// Register core admin routes
 	if enhancedHandler != nil {
@@ -457,9 +475,25 @@ func registerManagementRoutes2(root *gin.RouterGroup, cfg *config.Config, deps D
 			c.Status(http.StatusBadRequest)
 			return
 		}
+
+		// Try to add client (may fail if max connections reached)
+		if err := logging.GetWSLogger().AddClient(conn); err != nil {
+			_ = conn.WriteJSON(map[string]string{
+				"error": "Maximum connections reached",
+			})
+			conn.Close()
+			c.Status(http.StatusServiceUnavailable)
+			return
+		}
+
+		// Set read deadline and pong handler
 		_ = conn.SetReadDeadline(time.Now().Add(90 * time.Second))
-		conn.SetPongHandler(func(string) error { _ = conn.SetReadDeadline(time.Now().Add(90 * time.Second)); return nil })
-		logging.GetWSLogger().AddClient(conn)
+		conn.SetPongHandler(func(string) error {
+			_ = conn.SetReadDeadline(time.Now().Add(90 * time.Second))
+			return nil
+		})
+
+		// Start ping ticker
 		done := make(chan struct{})
 		go func() {
 			ticker := time.NewTicker(30 * time.Second)
@@ -467,12 +501,16 @@ func registerManagementRoutes2(root *gin.RouterGroup, cfg *config.Config, deps D
 			for {
 				select {
 				case <-ticker.C:
-					_ = conn.WriteControl(ws.PingMessage, []byte("ping"), time.Now().Add(10*time.Second))
+					if err := conn.WriteControl(ws.PingMessage, []byte("ping"), time.Now().Add(10*time.Second)); err != nil {
+						return
+					}
 				case <-done:
 					return
 				}
 			}
 		}()
+
+		// Read loop (keeps connection alive)
 		for {
 			if _, _, err := conn.NextReader(); err != nil {
 				close(done)
@@ -493,8 +531,103 @@ func registerManagementRoutes2(root *gin.RouterGroup, cfg *config.Config, deps D
 		c.Redirect(http.StatusTemporaryRedirect, target)
 	})
 
+	// Anti-truncation dry-run endpoint
+	mg.POST("/antitrunc/dry-run", func(c *gin.Context) {
+		var req antitrunc.DryRunRequest
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request: " + err.Error()})
+			return
+		}
+
+		// Perform dry-run
+		resp, err := antitrunc.DryRun(&req)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		// Check for debug header
+		debugHeader := c.GetHeader("X-Debug-Antitrunc")
+		if debugHeader != "" {
+			// Include additional debug information
+			c.JSON(http.StatusOK, gin.H{
+				"result":       resp,
+				"debug_header": debugHeader,
+				"request_info": gin.H{
+					"has_text":    req.Text != "",
+					"has_payload": len(req.Payload) > 0,
+					"rules_count": len(req.Rules),
+				},
+			})
+			return
+		}
+
+		c.JSON(http.StatusOK, resp)
+	})
+
 	// Assembly endpoints under the same management group
 	registerAssemblyRoutes(mg, cfg, deps)
+}
+
+// isWriteOperation 统一判定管理端“写操作”。
+// 规则：
+// 1) 非 GET/HEAD/OPTIONS 一律视为写；
+// 2) 对只读方法，若命中 Blocklist 视为写；若同时命中 Allowlist 则视为读（Allowlist 优先）。
+func isWriteOperation(method, path string, sec *config.SecurityConfig) bool {
+    m := strings.ToUpper(strings.TrimSpace(method))
+    // 明确的写方法
+    switch m {
+    case http.MethodGet, http.MethodHead, http.MethodOptions:
+        // 继续走路径级判定
+    default:
+        return true
+    }
+    // 路径级判定（可选配置）
+    p := strings.TrimSpace(strings.ToLower(path))
+    if p == "" || sec == nil {
+        return false
+    }
+    // Allowlist 优先
+    if matchAny(p, sec.ManagementWritePathAllowlist) {
+        return false
+    }
+    if matchAny(p, sec.ManagementWritePathBlocklist) {
+        return true
+    }
+    return false
+}
+
+// matchAny 支持三种匹配：
+// - 精确相等
+// - 前缀匹配：以 "prefix*" 结尾
+// - 后缀匹配：以 "*suffix" 开头
+func matchAny(path string, patterns []string) bool {
+    if len(patterns) == 0 {
+        return false
+    }
+    for _, raw := range patterns {
+        s := strings.ToLower(strings.TrimSpace(raw))
+        if s == "" {
+            continue
+        }
+        if s == path {
+            return true
+        }
+        if strings.HasSuffix(s, "*") {
+            // prefix*
+            prefix := strings.TrimSuffix(s, "*")
+            if strings.HasPrefix(path, prefix) {
+                return true
+            }
+        } else if strings.HasPrefix(s, "*") {
+            // *suffix
+            suffix := strings.TrimPrefix(s, "*")
+            if strings.HasSuffix(path, suffix) {
+                return true
+            }
+        }
+    }
+    return false
 }
 
 func validateCredentialShape(req map[string]any) (bool, []string) {

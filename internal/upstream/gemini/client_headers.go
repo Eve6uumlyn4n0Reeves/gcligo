@@ -35,17 +35,31 @@ func (c *Client) applyDefaultHeaders(ctx context.Context, req *http.Request, bea
 	}
 	req.Header.Set("X-Goog-Api-Client", "gl-go/"+gv)
 	req.Header.Set("Client-Metadata", "ideType=IDE_UNSPECIFIED,platform=PLATFORM_UNSPECIFIED,pluginType=GEMINI")
-	if c.cfg.HeaderPassThrough {
+
+	// Apply header passthrough with whitelist filtering
+	if c.cfg.Security.HeaderPassthroughConfig.Enabled {
 		if hdr := getHeaderOverrides(ctx); hdr != nil {
-			if up := hdr.Get("X-Goog-User-Project"); up != "" && req.Header.Get("X-Goog-User-Project") == "" {
-				req.Header.Set("X-Goog-User-Project", up)
+			// Create header filter
+			filter := NewHeaderFilter(c.cfg.Security.HeaderPassthroughConfig)
+
+			// Filter and apply allowed headers
+			filtered := filter.FilterHeaders(hdr)
+			for key, values := range filtered {
+				// Only set if not already present
+				if req.Header.Get(key) == "" {
+					for _, v := range values {
+						req.Header.Add(key, v)
+					}
+				}
 			}
-			if rid := hdr.Get("X-Request-ID"); rid != "" && req.Header.Get("X-Request-ID") == "" {
-				req.Header.Set("X-Request-ID", rid)
+
+			// Special handling for X-Request-ID -> X-Client-Request-ID
+			if rid := filter.GetAllowedHeader(hdr, "X-Request-ID"); rid != "" && req.Header.Get("X-Request-ID") == "" {
 				req.Header.Set("X-Client-Request-ID", rid)
 			}
 		}
 	}
+
 	if req.Header.Get("X-Goog-User-Project") == "" {
 		if c.credentials != nil && strings.TrimSpace(c.credentials.ProjectID) != "" {
 			req.Header.Set("X-Goog-User-Project", strings.TrimSpace(c.credentials.ProjectID))

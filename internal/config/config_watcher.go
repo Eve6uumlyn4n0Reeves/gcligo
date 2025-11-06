@@ -2,17 +2,88 @@ package config
 
 import (
 	"os"
+	"path/filepath"
 	"time"
 
+	"github.com/fsnotify/fsnotify"
 	log "github.com/sirupsen/logrus"
 )
 
 func (cm *ConfigManager) startWatcher() {
-	cm.watcher = time.NewTicker(5 * time.Second)
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		log.WithError(err).Warn("failed to create file watcher, falling back to polling")
+		cm.startPollingWatcher()
+		return
+	}
+
+	// Watch the config file
+	if err := watcher.Add(cm.configPath); err != nil {
+		log.WithError(err).WithField("path", cm.configPath).Warn("failed to watch config file, falling back to polling")
+		watcher.Close()
+		cm.startPollingWatcher()
+		return
+	}
+
+	// Also watch the directory to catch atomic writes (rename operations)
+	configDir := filepath.Dir(cm.configPath)
+	if err := watcher.Add(configDir); err != nil {
+		log.WithError(err).WithField("dir", configDir).Warn("failed to watch config directory")
+	}
+
+	log.WithField("path", cm.configPath).Info("file watcher started using fsnotify")
+
 	go func() {
+		defer watcher.Close()
+
+		// Debounce timer to avoid multiple reloads on rapid changes
+		var debounceTimer *time.Timer
+		debounceDuration := 100 * time.Millisecond
+
 		for {
 			select {
-			case <-cm.watcher.C:
+			case event, ok := <-watcher.Events:
+				if !ok {
+					return
+				}
+
+				// Only react to Write and Create events on our config file
+				if event.Name == cm.configPath && (event.Op&fsnotify.Write == fsnotify.Write || event.Op&fsnotify.Create == fsnotify.Create) {
+					// Reset debounce timer
+					if debounceTimer != nil {
+						debounceTimer.Stop()
+					}
+					debounceTimer = time.AfterFunc(debounceDuration, func() {
+						cm.checkAndReload()
+					})
+				}
+
+			case err, ok := <-watcher.Errors:
+				if !ok {
+					return
+				}
+				log.WithError(err).Warn("file watcher error")
+
+			case <-cm.stopCh:
+				if debounceTimer != nil {
+					debounceTimer.Stop()
+				}
+				return
+			}
+		}
+	}()
+}
+
+// startPollingWatcher is a fallback when fsnotify is not available
+func (cm *ConfigManager) startPollingWatcher() {
+	ticker := time.NewTicker(5 * time.Second)
+	log.WithField("interval", "5s").Info("file watcher started using polling")
+
+	go func() {
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
 				cm.checkAndReload()
 			case <-cm.stopCh:
 				return

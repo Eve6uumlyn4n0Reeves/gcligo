@@ -1,5 +1,19 @@
 package config
 
+// getDefaultRegexReplacements returns default regex replacement rules
+// These rules are inspired by the Python gcli2api project
+func getDefaultRegexReplacements() []RegexReplacement {
+	return []RegexReplacement{
+		{
+			Name:        "age_pattern",
+			Pattern:     `(?:[1-9]|1[0-8])岁(?:的)?|(?:十一|十二|十三|十四|十五|十六|十七|十八|十|一|二|三|四|五|六|七|八|九)岁(?:的)?`,
+			Replacement: "",
+			Enabled:     false, // Disabled by default, users can enable in config
+		},
+		// Add more default rules here as needed
+	}
+}
+
 // defaultConfig returns the default configuration using central default values.
 func (cm *ConfigManager) defaultConfig() *FileConfig {
 	defaults := GetDefaults()
@@ -42,6 +56,7 @@ func (cm *ConfigManager) defaultConfig() *FileConfig {
 
 		AntiTruncationMax:     defaults.AntiTruncationMax,
 		AntiTruncationEnabled: defaults.AntiTruncationEnabled,
+		CompatibilityMode:     defaults.CompatibilityMode,
 		RequestLog:            false,
 
 		CodeAssistEndpoint: defaults.CodeAssistEndpoint,
@@ -84,6 +99,7 @@ func (cm *ConfigManager) defaultConfig() *FileConfig {
 
 		PreferredBaseModels: append([]string(nil), defaults.PreferredBaseModels...),
 		DisabledModels:      append([]string(nil), defaults.DisabledModels...),
+		RegexReplacements:   getDefaultRegexReplacements(),
 
 		AutoProbeEnabled:             defaults.AutoProbeEnabled,
 		AutoProbeHourUTC:             defaults.AutoProbeHourUTC,

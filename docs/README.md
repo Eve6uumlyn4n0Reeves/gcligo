@@ -1,32 +1,32 @@
-# gcli2api-go 文档中心
+# gcli2api-go 文档索引
 
-集中入口，帮助开发者快速定位架构说明、配置指南与 API 规范。所有文档默认位于 `docs/` 目录，如需补充或迁移，请同步更新本索引。
+本目录包含 gcli2api-go 项目的完整文档，分为后端（Go）和前端（TypeScript）两部分。
 
-## 快速开始
-1. **架构概览**：阅读 `architecture.md` 了解整体设计与 ADR 背景。
-2. **配置参考**：使用 `configuration.md` 对照 `config.example.yaml` 调整部署参数。
-3. **管理控制台**：参考 `management-console.md` 熟悉凭证、模型与监控操作。
-4. **API 参考**：根据 `api-reference.md` 或完整的 `openapi/openapi.yaml` 对接客户端。
-5. **测试指南**：查阅 `testing.md` 了解推荐的覆盖率目标与命令。
+## 后端模块文档（Go）
 
-## 指南（Guides）
-- `architecture.md`：系统组件、请求流与部署拓扑。
-- `management-console.md`：控制台导航、快捷键与常见操作。
-- `model-variants.md`：模型变体生成逻辑与命名约定。
-- `testing.md`：单元/集成测试策略与覆盖率目标。
-- （建议补充）`guides/troubleshooting.md`、`guides/deployment.md`、`guides/performance-tuning.md` —— 可按需新增目录并迁移现有文档。
+### 已完成模块（11 个）
 
-## 参考（References）
-- `configuration.md`：所有配置项说明。
-- `error-semantics.md`：**统一错误语义与兼容矩阵**（合并了 `error-codes.md` 和 `error-handling.md`）。
-- `api-reference.md`：快速端点列表与示例。
-- `openapi/openapi.yaml`：完整 OpenAPI 3.1 规范，可用于生成 SDK/类型。
+1. **Handlers 模块**：[backend/modules/handlers.md](backend/modules/handlers.md)
+2. **Config 模块**：[backend/modules/config.md](backend/modules/config.md)
+3. **Credential 模块**：[backend/modules/credential.md](backend/modules/credential.md)
+4. **Upstream 模块**：[backend/modules/upstream.md](backend/modules/upstream.md)
+5. **Translator 模块**：[backend/modules/translator.md](backend/modules/translator.md)
+6. **Storage 模块**：[backend/modules/storage.md](backend/modules/storage.md)
+7. **Middleware 模块**：[backend/modules/middleware.md](backend/modules/middleware.md)
+8. **Models 模块**：[backend/modules/models.md](backend/modules/models.md)
+9. **Antitrunc 模块**：[backend/modules/antitrunc.md](backend/modules/antitrunc.md)
+10. **Server 模块**：[backend/modules/server.md](backend/modules/server.md)
+11. **Monitoring 模块**：[backend/modules/monitoring.md](backend/modules/monitoring.md)
 
-## 规格与 ADR
-- `adrs/`：架构决策记录（例如 `ADR-0001-single-upstream.md`）。
-- `architecture.md`：与 ADR 映射的高层设计。
+## 前端模块文档（TypeScript）
 
-## 文档维护建议
-- 新增文档时在此文件登记条目与路径。
-- 规划中的结构调整（`guides/`, `references/`, `specifications/`）可按本页章节落地，迁移完成后更新链接。
-- 对照代码改动更新相关章节，并在 PR 模板中勾选“文档同步”检查项。
+### 已完成模块（8 个）
+
+1. ✅ **Admin 模块**：[frontend/modules/admin.md](frontend/modules/admin.md) - 应用核心、路由、布局、快捷键、自动刷新
+2. ✅ **API 模块**：[frontend/modules/api.md](frontend/modules/api.md) - 后端通信层、错误处理、重试机制、缓存管理、批量操作
+3. ✅ **Creds 模块**：[frontend/modules/creds.md](frontend/modules/creds.md) - 凭证管理 UI、健康评分、批量操作、数据过滤、可视化图表
+4. ✅ **Tabs 模块**：[frontend/modules/tabs.md](frontend/modules/tabs.md) - 标签页动态加载、骨架屏、错误处理、模块初始化、生命周期管理
+5. ✅ **Components 模块**：[frontend/modules/components.md](frontend/modules/components.md) - 通知中心、对话框管理、HTML 安全、生命周期管理、无障碍支持
+6. ✅ **Services 模块**：[frontend/modules/services.md](frontend/modules/services.md) - 缓存管理、事件总线、函数节流/防抖、快捷键管理、自动刷新
+7. ✅ **Utils 模块**：[frontend/modules/utils.md](frontend/modules/utils.md) - 无障碍支持、路径处理、通知系统、虚拟滚动、批量任务流
+8. ✅ **Core 模块**：[frontend/modules/core.md](frontend/modules/core.md) - 模块管理、动态加载、版本控制、单例模式、并发控制

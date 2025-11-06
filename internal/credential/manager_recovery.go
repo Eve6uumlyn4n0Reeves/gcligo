@@ -101,6 +101,10 @@ func (m *Manager) recoverCredential(ctx context.Context, credID string) error {
 	target.Recover()
 	log.Infof("Recovered credential %s (was banned for: %s)", credID, target.BannedReason)
 	m.persistCredentialState(target, true)
+
+	// Trigger cache invalidation hooks
+	m.triggerInvalidation(credID, "credential_recovered")
+
 	return nil
 }
 

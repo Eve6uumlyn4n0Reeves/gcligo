@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"gcli2api-go/internal/antitrunc"
 	credpkg "gcli2api-go/internal/credential"
 	"gcli2api-go/internal/models"
 	upstream "gcli2api-go/internal/upstream"
@@ -31,6 +32,8 @@ func (h *Handler) tryGenerateWithFallback(ctx context.Context, client upstreamCl
 			}
 			payload := map[string]any{"model": attempt, "project": effProject, "request": req}
 			b, _ := json.Marshal(payload)
+			// Apply regex replacements if configured
+			b = antitrunc.ApplyRegexReplacements(b, h.regexReplacer)
 			return client.Generate(ctx, b)
 		}
 		resp, cred, err := upstream.TryWithRotation(ctx, h.credMgr, h.router, usedCredSafe(usedCred), upstream.RotationOptions{MaxRotations: 0, RotateOn5xx: h.cfg.RetryOn5xx}, do)
@@ -59,6 +62,8 @@ func (h *Handler) tryStreamWithFallback(ctx context.Context, client upstreamClie
 			}
 			payload := map[string]any{"model": attempt, "project": effProject, "request": req}
 			b, _ := json.Marshal(payload)
+			// Apply regex replacements if configured
+			b = antitrunc.ApplyRegexReplacements(b, h.regexReplacer)
 			return client.Stream(ctx, b)
 		}
 		resp, cred, err := upstream.TryWithRotation(ctx, h.credMgr, h.router, usedCredSafe(usedCred), upstream.RotationOptions{MaxRotations: 0, RotateOn5xx: h.cfg.RetryOn5xx}, do)

@@ -70,6 +70,31 @@
 - `docs/deployment.md`：生产环境部署与访问控制建议。
 - 其他专题文档（存储、告警、迁移、错误码等）同样位于 `docs/`。
 
+### 后端模块文档（Go）
+
+- `docs/backend/modules/handlers.md`：Handlers 模块详解（API 路由、鉴权、流式/非流式、回退与用量统计）
+- `docs/backend/modules/config.md`：Config 模块详解（配置加载、热更新、域化配置、环境变量覆盖）
+- `docs/backend/modules/credential.md`：Credential 模块详解（OAuth 凭证管理、自动封禁、自动恢复、Token 刷新、健康评分）
+- `docs/backend/modules/upstream.md`：Upstream 模块详解（Gemini CLI 集成、重试策略、路由策略、模型回退、P2C 选择）
+- `docs/backend/modules/translator.md`：Translator 模块详解（OpenAI ↔ Gemini 格式转换、Thinking 提取、工具调用映射、Sanitizer）
+- `docs/backend/modules/storage.md`：Storage 模块详解（多后端存储、File/Redis/MongoDB/PostgreSQL、批量操作、事务支持、数据迁移）
+- `docs/backend/modules/middleware.md`：Middleware 模块详解（统一鉴权、请求日志、Prometheus 指标、限流、Panic 恢复、CORS、安全 Goroutine）
+- `docs/backend/modules/models.md`：Models 模块详解（模型注册、变体生成、能力映射、别名解析、回退策略、Thinking/Search 配置）
+- `docs/backend/modules/antitrunc.md`：Antitrunc 模块详解（抗截断检测、自动续写、正则替换、流式支持、启发式规则）
+- `docs/backend/modules/server.md`：Server 模块详解（服务器构建、双引擎架构、路由装配、中间件应用、管理端 API、装配台、访问控制）
+- `docs/backend/modules/monitoring.md`：Monitoring 模块详解（Prometheus 指标、EnhancedMetrics、MetricsCollector、慢查询日志、OpenTelemetry 追踪、PromQL 查询）
+
+### 前端模块文档（TypeScript）
+
+- `docs/frontend/modules/admin.md`：Admin 模块详解（应用核心、路由管理、布局管理、快捷键系统、自动刷新、错误处理、无障碍支持）
+- `docs/frontend/modules/api.md`：API 模块详解（后端通信层、统一错误处理、自动重试机制、请求缓存、批量操作、网络状态监控、业务 API 封装）
+- `docs/frontend/modules/creds.md`：Creds 模块详解（凭证管理 UI、列表/详情渲染、健康评分系统、健康可视化图表、数据过滤、批量操作、分页管理）
+- `docs/frontend/modules/tabs.md`：Tabs 模块详解（标签页动态加载、骨架屏展示、错误处理、模块初始化、生命周期管理、国际化支持）
+- `docs/frontend/modules/components.md`：Components 模块详解（通知中心、对话框管理器、Toast 通知、确认对话框、HTML 安全、事件处理、无障碍支持）
+- `docs/frontend/modules/services.md`：Services 模块详解（缓存管理、事件总线、函数节流/防抖、快捷键管理、自动刷新、LRU 淘汰策略、统计分析）
+- `docs/frontend/modules/utils.md`：Utils 模块详解（无障碍支持、焦点管理、路径处理、通知系统、虚拟滚动、批量任务流、HTML 安全）
+- `docs/frontend/modules/core.md`：Core 模块详解（模块管理、动态加载、版本控制、单例模式、并发控制、缓存管理）
+
 ## 代码结构
 
 > **注意**: `web/dist/` 目录包含从 TypeScript 编译的 JavaScript 文件。

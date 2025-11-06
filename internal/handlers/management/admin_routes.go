@@ -145,6 +145,16 @@ func (h *AdminAPIHandler) RegisterRoutes(group *gin.RouterGroup) {
 	group.GET("/models/capabilities", h.GetModelCapabilities)
 	group.PUT("/models/capabilities", h.UpsertModelCapabilities)
 	group.POST("/models/capabilities/seed-defaults", h.SeedModelCapabilities)
+
+	// Usage statistics API
+	group.GET("/usage/stats", h.GetUsageStats)
+	group.GET("/usage/credentials", h.GetCredentialUsageStats)
+	group.GET("/usage/credentials/:id", h.GetCredentialUsageDetail)
+	group.GET("/usage/daily", h.GetDailyUsageStats)
+	group.GET("/usage/hourly", h.GetHourlyUsageStats)
+	group.GET("/usage/apis", h.GetAPIUsageStats)
+	group.GET("/usage/models", h.GetModelUsageStats)
+
 	// multi-user管理已移除：仅保留单一管理密钥 + 会话登录
 }
 

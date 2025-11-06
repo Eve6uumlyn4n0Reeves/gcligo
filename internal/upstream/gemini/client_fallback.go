@@ -12,6 +12,9 @@ import (
 
 // doAttempt executes a single HTTP attempt with retry policy applied to the payload.
 // It returns the final response, error, total duration, HTTP status code, and retry count.
+//
+// IMPORTANT: Caller is responsible for closing resp.Body if resp is non-nil.
+// The response body is NOT automatically closed by this function.
 func (c *Client) doAttempt(ctx context.Context, url string, payload []byte, bearer string) (*http.Response, error, time.Duration, int, int) {
 	makeReq := func() (*http.Request, error) {
 		req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(payload))

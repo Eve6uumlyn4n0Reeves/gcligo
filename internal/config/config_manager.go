@@ -19,7 +19,6 @@ type ConfigManager struct {
 	mu         sync.RWMutex
 	config     *FileConfig
 	configPath string
-	watcher    *time.Ticker
 	stopCh     chan struct{}
 	onChange   []func(*FileConfig)
 	lastMod    time.Time
@@ -139,9 +138,7 @@ func (cm *ConfigManager) UpdateConfig(updates map[string]interface{}) error {
 // Close stops the configuration manager
 func (cm *ConfigManager) Close() {
 	close(cm.stopCh)
-	if cm.watcher != nil {
-		cm.watcher.Stop()
-	}
+	// The watcher goroutine will clean up when stopCh is closed
 }
 
 func (cm *ConfigManager) listenersSnapshot() ([]func(*FileConfig), events.Publisher, string) {

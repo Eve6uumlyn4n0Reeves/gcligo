@@ -53,6 +53,7 @@ func fileConfigToConfig(fc *FileConfig) *Config {
 
 		AntiTruncationMax:     fc.AntiTruncationMax,
 		AntiTruncationEnabled: fc.AntiTruncationEnabled,
+		CompatibilityMode:     fc.CompatibilityMode,
 		PprofEnabled:          false,
 		RequestLogEnabled:     fc.RequestLog,
 
@@ -90,6 +91,7 @@ func fileConfigToConfig(fc *FileConfig) *Config {
 		AutoImagePlaceholder:   fc.AutoImagePlaceholder,
 		SanitizerEnabled:       fc.SanitizerEnabled,
 		SanitizerPatterns:      fc.SanitizerPatterns,
+		RegexReplacements:      fc.RegexReplacements,
 
 		OAuthClientID:     fc.OAuthClientID,
 		OAuthClientSecret: fc.OAuthClientSecret,

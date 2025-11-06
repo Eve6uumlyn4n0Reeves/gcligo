@@ -25,6 +25,7 @@ var defaultIndicators = []string{
 type Config struct {
 	MinCompletionLen     int
 	TruncationIndicators []string
+	RegexReplacer        *RegexReplacer // Optional regex replacer for text preprocessing
 }
 
 // DefaultConfig returns the baseline detector configuration.
@@ -169,6 +170,14 @@ func BuildContinuationPayload(orig []byte, soFar string, contText string) []byte
 	}
 
 	return bytes.Clone(out)
+}
+
+// ApplyRegexReplacements applies regex replacements to a payload if a replacer is configured
+func ApplyRegexReplacements(payload []byte, replacer *RegexReplacer) []byte {
+	if replacer == nil || len(payload) == 0 {
+		return payload
+	}
+	return replacer.ApplyToPayload(payload)
 }
 
 func normalizeIndicators(indicators []string) []string {

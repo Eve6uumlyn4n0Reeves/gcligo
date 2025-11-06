@@ -7,27 +7,53 @@ import (
 	"github.com/tidwall/gjson"
 )
 
+// translateMessages converts OpenAI messages to Gemini format.
+// If compatibilityMode is true, all system messages are converted to user messages.
+// If compatibilityMode is false, leading system messages are collected as systemInstructions.
 func translateMessages(rawJSON []byte) ([]interface{}, []interface{}) {
 	messages := gjson.GetBytes(rawJSON, "messages")
 	var contents []interface{}
 	var systemInstructions []interface{}
 
+	// Check compatibility mode from the request
+	compatibilityMode := gjson.GetBytes(rawJSON, "_compatibility_mode").Bool()
+
+	// Only collect system messages if NOT in compatibility mode
+	collectingSystem := !compatibilityMode
+
 	for _, msg := range messages.Array() {
 		role := msg.Get("role").String()
 		content := msg.Get("content")
 
-		switch role {
-		case "system":
-			if content.IsArray() {
-				for _, part := range content.Array() {
-					systemInstructions = append(systemInstructions, convertContentPart(part))
+		// Handle system messages
+		if role == "system" {
+			if compatibilityMode {
+				// Compatibility mode: convert all system messages to user messages
+				role = "user"
+			} else if collectingSystem {
+				// Normal mode: collect leading system messages as systemInstructions
+				if content.IsArray() {
+					for _, part := range content.Array() {
+						systemInstructions = append(systemInstructions, convertContentPart(part))
+					}
+				} else {
+					systemInstructions = append(systemInstructions, map[string]interface{}{
+						"text": sanitizeText(content.String()),
+					})
 				}
+				continue
 			} else {
-				systemInstructions = append(systemInstructions, map[string]interface{}{
-					"text": sanitizeText(content.String()),
-				})
+				// Normal mode: subsequent system messages become user messages
+				role = "user"
 			}
+		}
 
+		// Stop collecting system messages once we see a non-system message
+		if role != "system" {
+			collectingSystem = false
+		}
+
+		switch role {
 		case "user":
 			geminiMsg := map[string]interface{}{
 				"role":  "user",

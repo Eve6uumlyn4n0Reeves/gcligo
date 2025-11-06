@@ -21,16 +21,32 @@ type UpstreamConfig struct {
 
 // SecurityConfig 安全和管理访问配置
 type SecurityConfig struct {
-	ManagementKey            string
-	ManagementKeyHash        string
-	ManagementReadOnly       bool
-	ManagementAllowRemote    bool
-	ManagementRemoteTTlHours int
-	ManagementRemoteAllowIPs []string
-	AuthDir                  string
-	HeaderPassThrough        bool
-	Debug                    bool
-	LogFile                  string
+    ManagementKey            string
+    ManagementKeyHash        string
+    ManagementReadOnly       bool
+    ManagementReadOnlyKey    string   // 只读管理密钥（可选）
+    ManagementAllowRemote    bool
+    ManagementRemoteTTlHours int
+    ManagementRemoteAllowIPs []string
+    AuthDir                  string
+    HeaderPassThrough        bool // Deprecated: Use HeaderPassthroughConfig instead
+    HeaderPassthroughConfig  HeaderPassthroughConfig
+    // 管理端写操作“路径级”兜底判定（可选）。
+    // 当请求方法为只读（GET/HEAD/OPTIONS）但命中 Blocklist，则仍按“写操作”处理；
+    // 若同时命中 Allowlist，则以 Allowlist 优先（视为读）。
+    // 支持三种匹配：精确匹配；前缀匹配（以"prefix*"）；后缀匹配（以"*suffix"）。
+    ManagementWritePathAllowlist []string `yaml:"management_write_path_allowlist" json:"management_write_path_allowlist"`
+    ManagementWritePathBlocklist []string `yaml:"management_write_path_blocklist" json:"management_write_path_blocklist"`
+    Debug                    bool
+    LogFile                  string
+}
+
+// HeaderPassthroughConfig Header 透传配置
+type HeaderPassthroughConfig struct {
+	Enabled   bool     `yaml:"enabled" json:"enabled"`
+	AllowList []string `yaml:"allow_list" json:"allow_list"` // 允许透传的 Header 白名单
+	DenyList  []string `yaml:"deny_list" json:"deny_list"`   // 拒绝透传的 Header 黑名单
+	AuditLog  bool     `yaml:"audit_log" json:"audit_log"`   // 是否记录透传的 Header
 }
 
 // ExecutionConfig 执行控制配置
@@ -96,6 +112,7 @@ type APICompatConfig struct {
 type ResponseShapingConfig struct {
 	AntiTruncationMax      int
 	AntiTruncationEnabled  bool
+	CompatibilityMode      bool
 	FakeStreamingEnabled   bool
 	FakeStreamingChunkSize int
 	FakeStreamingDelayMs   int

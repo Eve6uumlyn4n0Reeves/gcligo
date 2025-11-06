@@ -1,5 +1,13 @@
 package config
 
+// RegexReplacement represents a regex pattern replacement rule
+type RegexReplacement struct {
+	Name        string `yaml:"name" json:"name"`               // Rule name for identification
+	Pattern     string `yaml:"pattern" json:"pattern"`         // Regex pattern to match
+	Replacement string `yaml:"replacement" json:"replacement"` // Replacement text
+	Enabled     bool   `yaml:"enabled" json:"enabled"`         // Whether this rule is enabled
+}
+
 // FileConfig represents the configuration loaded from file
 type FileConfig struct {
 	// Server settings
@@ -62,6 +70,7 @@ type FileConfig struct {
 	UsageResetIntervalHours int      `yaml:"usage_reset_interval_hours" json:"usage_reset_interval_hours"`
 	UsageResetTimezone      string   `yaml:"usage_reset_timezone" json:"usage_reset_timezone"`
 	UsageResetHourLocal     int      `yaml:"usage_reset_hour_local" json:"usage_reset_hour_local"`
+	CompatibilityMode       bool     `yaml:"compatibility_mode" json:"compatibility_mode"` // Convert system messages to user messages
 	AutoBanEnabled          bool     `yaml:"auto_ban_enabled" json:"auto_ban_enabled"`
 	AutoBan429Threshold     int      `yaml:"auto_ban_429_threshold" json:"auto_ban_429_threshold"`
 	AutoBan403Threshold     int      `yaml:"auto_ban_403_threshold" json:"auto_ban_403_threshold"`
@@ -76,11 +85,12 @@ type FileConfig struct {
 	RoutingPersistIntervalSec int  `yaml:"routing_persist_interval_sec" json:"routing_persist_interval_sec"`
 
 	// Feature toggles
-	OpenAIImagesIncludeMime bool     `yaml:"openai_images_include_mime" json:"openai_images_include_mime"`
-	ToolArgsDeltaChunk      int      `yaml:"tool_args_delta_chunk" json:"tool_args_delta_chunk"`
-	SanitizerEnabled        bool     `yaml:"sanitizer_enabled" json:"sanitizer_enabled"`
-	SanitizerPatterns       []string `yaml:"sanitizer_patterns" json:"sanitizer_patterns"`
-	PreferredBaseModels     []string `yaml:"preferred_base_models" json:"preferred_base_models"`
+	OpenAIImagesIncludeMime bool                `yaml:"openai_images_include_mime" json:"openai_images_include_mime"`
+	ToolArgsDeltaChunk      int                 `yaml:"tool_args_delta_chunk" json:"tool_args_delta_chunk"`
+	SanitizerEnabled        bool                `yaml:"sanitizer_enabled" json:"sanitizer_enabled"`
+	SanitizerPatterns       []string            `yaml:"sanitizer_patterns" json:"sanitizer_patterns"`
+	PreferredBaseModels     []string            `yaml:"preferred_base_models" json:"preferred_base_models"`
+	RegexReplacements       []RegexReplacement  `yaml:"regex_replacements" json:"regex_replacements"`
 
 	// Fake streaming
 	FakeStreamingEnabled   bool `yaml:"fake_streaming_enabled" json:"fake_streaming_enabled"`

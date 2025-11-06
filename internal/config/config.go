@@ -51,11 +51,12 @@ type Config struct {
 	ManagementKey                 string
 	ManagementKeyHash             string
 	ManagementReadOnly            bool
+	ManagementReadOnlyKey         string
 	ManagementAllowRemote         bool
 	ManagementRemoteTTlHours      int
 	ManagementRemoteAllowIPs      []string
 	AuthDir                       string
-	HeaderPassThrough             bool
+	HeaderPassThrough             bool // Deprecated: Use Security.HeaderPassthroughConfig instead
 	Debug                         bool
 	LogFile                       string
 	CallsPerRotation              int
@@ -99,6 +100,7 @@ type Config struct {
 	DisableModelVariants          bool
 	AntiTruncationMax             int
 	AntiTruncationEnabled         bool
+	CompatibilityMode             bool
 	FakeStreamingEnabled          bool
 	FakeStreamingChunkSize        int
 	FakeStreamingDelayMs          int
@@ -108,6 +110,7 @@ type Config struct {
 	ProxyURL                      string
 	SanitizerEnabled              bool
 	SanitizerPatterns             []string
+	RegexReplacements             []RegexReplacement
 	OAuthClientID                 string
 	OAuthClientSecret             string
 	OAuthRedirectURL              string
@@ -160,11 +163,17 @@ func (c *Config) SyncFromDomains() {
 	c.ManagementKey = c.Security.ManagementKey
 	c.ManagementKeyHash = c.Security.ManagementKeyHash
 	c.ManagementReadOnly = c.Security.ManagementReadOnly
+	c.ManagementReadOnlyKey = c.Security.ManagementReadOnlyKey
 	c.ManagementAllowRemote = c.Security.ManagementAllowRemote
 	c.ManagementRemoteTTlHours = c.Security.ManagementRemoteTTlHours
 	c.ManagementRemoteAllowIPs = c.Security.ManagementRemoteAllowIPs
 	c.AuthDir = c.Security.AuthDir
-	c.HeaderPassThrough = c.Security.HeaderPassThrough
+	// Backward compatibility: if HeaderPassThrough is set but HeaderPassthroughConfig is empty, migrate
+	if c.Security.HeaderPassThrough && !c.Security.HeaderPassthroughConfig.Enabled {
+		c.Security.HeaderPassthroughConfig.Enabled = true
+		c.Security.HeaderPassthroughConfig.AllowList = []string{"X-Request-ID", "X-Goog-User-Project"}
+	}
+	c.HeaderPassThrough = c.Security.HeaderPassthroughConfig.Enabled
 	c.Debug = c.Security.Debug
 	c.LogFile = c.Security.LogFile
 
@@ -220,6 +229,7 @@ func (c *Config) SyncFromDomains() {
 	// ResponseShaping
 	c.AntiTruncationMax = c.ResponseShaping.AntiTruncationMax
 	c.AntiTruncationEnabled = c.ResponseShaping.AntiTruncationEnabled
+	c.CompatibilityMode = c.ResponseShaping.CompatibilityMode
 	c.FakeStreamingEnabled = c.ResponseShaping.FakeStreamingEnabled
 	c.FakeStreamingChunkSize = c.ResponseShaping.FakeStreamingChunkSize
 	c.FakeStreamingDelayMs = c.ResponseShaping.FakeStreamingDelayMs
@@ -286,10 +296,16 @@ func (c *Config) SyncToDomains() {
 	c.Security.ManagementKey = c.ManagementKey
 	c.Security.ManagementKeyHash = c.ManagementKeyHash
 	c.Security.ManagementReadOnly = c.ManagementReadOnly
+	c.Security.ManagementReadOnlyKey = c.ManagementReadOnlyKey
 	c.Security.ManagementAllowRemote = c.ManagementAllowRemote
 	c.Security.ManagementRemoteTTlHours = c.ManagementRemoteTTlHours
 	c.Security.ManagementRemoteAllowIPs = c.ManagementRemoteAllowIPs
 	c.Security.AuthDir = c.AuthDir
+	// Backward compatibility: sync HeaderPassThrough to HeaderPassthroughConfig
+	if c.HeaderPassThrough && !c.Security.HeaderPassthroughConfig.Enabled {
+		c.Security.HeaderPassthroughConfig.Enabled = true
+		c.Security.HeaderPassthroughConfig.AllowList = []string{"X-Request-ID", "X-Goog-User-Project"}
+	}
 	c.Security.HeaderPassThrough = c.HeaderPassThrough
 	c.Security.Debug = c.Debug
 	c.Security.LogFile = c.LogFile
@@ -346,6 +362,7 @@ func (c *Config) SyncToDomains() {
 	// ResponseShaping
 	c.ResponseShaping.AntiTruncationMax = c.AntiTruncationMax
 	c.ResponseShaping.AntiTruncationEnabled = c.AntiTruncationEnabled
+	c.ResponseShaping.CompatibilityMode = c.CompatibilityMode
 	c.ResponseShaping.FakeStreamingEnabled = c.FakeStreamingEnabled
 	c.ResponseShaping.FakeStreamingChunkSize = c.FakeStreamingChunkSize
 	c.ResponseShaping.FakeStreamingDelayMs = c.FakeStreamingDelayMs

@@ -6,8 +6,46 @@ gemini_port: 8318 # set 0 to disable
 base_path: ""
 web_admin_enabled: true
 
-# Authentication
+# Authentication & Security
 management_key: "change-me"
+# management_key_hash: "$2a$10$..."  # bcrypt hash alternative
+# management_readonly_key: "readonly-key"  # Optional: separate read-only key
+management_readonly: false
+management_allow_remote: false
+management_remote_ttl_hours: 24
+# management_remote_allow_ips:
+#   - "192.168.1.0/24"
+#   - "10.0.0.1"
+auth_dir: "./auth"
+
+# Optional: Path-level write detection (for special GET with side effects)
+# When a request method is GET/HEAD/OPTIONS, entries here act as overrides.
+# Matching rules: exact, prefix ("prefix*"), suffix ("*suffix").
+# Allowlist has higher priority than Blocklist.
+# management_write_path_allowlist:
+#   - "/routes/api/management/logs*"     # explicitly safe read paths
+# management_write_path_blocklist:
+#   - "/routes/api/management/deploy*"   # GET with side effects should be treated as write
+#   - "/routes/api/management/import*"
+#   - "*/trigger-reindex"
+
+# Header Passthrough Configuration (Deprecated: use security.header_passthrough_config)
+header_passthrough: false
+
+# New Header Passthrough Configuration (Recommended)
+# security:
+#   header_passthrough_config:
+#     enabled: false
+#     allow_list:
+#       - "X-Request-ID"
+#       - "X-Goog-User-Project"
+#       - "X-Custom-Header"
+#     deny_list:
+#       - "X-Sensitive-Header"
+#     audit_log: false
+
+debug: false
+log_file: ""
 
 # Storage backend: file|redis|postgres|mongodb|auto
 storage_backend: file
@@ -60,3 +98,9 @@ sanitizer_enabled: false
 # disabled_models:
 #   - gemini-2.5-pro-maxthinking
 #   - 假流式/gemini-2.5-flash
+
+# Compatibility mode: Convert all system messages to user messages
+# This may reduce model understanding but can avoid empty streaming responses
+# Environment variable: COMPATIBILITY_MODE
+# Default: false (Python default: true)
+compatibility_mode: false

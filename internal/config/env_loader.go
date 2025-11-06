@@ -66,6 +66,7 @@ func baseConfigFromEnv(defaults DefaultValues) *Config {
 		AntiTruncationEnabled: getenvBool("ANTI_TRUNCATION_ENABLED", defaults.AntiTruncationEnabled),
 		PprofEnabled:          getenvBool("PPROF_ENABLED", false),
 		RequestLogEnabled:     getenvBool("REQUEST_LOG_ENABLED", false),
+		CompatibilityMode:     getenvBool("COMPATIBILITY_MODE", defaults.CompatibilityMode),
 
 		DialTimeoutSec:           defaults.DialTimeoutSec,
 		TLSHandshakeTimeoutSec:   defaults.TLSHandshakeTimeoutSec,

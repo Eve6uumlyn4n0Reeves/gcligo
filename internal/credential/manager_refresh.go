@@ -64,6 +64,10 @@ func (m *Manager) refreshCredentialCore(ctx context.Context, credID string) erro
 		log.Warnf("Failed to persist refreshed token for %s: %v", credID, err)
 	}
 	log.Infof("Refreshed OAuth token for %s", credID)
+
+	// Trigger cache invalidation hooks
+	m.triggerInvalidation(credID, "credential_refresh")
+
 	return nil
 }
 

@@ -44,6 +44,9 @@ type DefaultValues struct {
 	AntiTruncationMax     int
 	AntiTruncationEnabled bool
 
+	// Compatibility Mode
+	CompatibilityMode bool
+
 	// Fake Streaming
 	FakeStreamingEnabled   bool
 	FakeStreamingChunkSize int
@@ -142,6 +145,9 @@ func GetDefaults() DefaultValues {
 		// Anti-Truncation
 		AntiTruncationMax:     3,
 		AntiTruncationEnabled: false,
+
+		// Compatibility Mode (default: false, Python default: true)
+		CompatibilityMode: false,
 
 		// Fake Streaming
 		FakeStreamingEnabled:   false,

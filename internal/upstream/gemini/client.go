@@ -110,6 +110,11 @@ func (c *Client) getToken() string {
 // moved to client_headers.go
 // func generateGeminiCLIUserAgent() string { return "" }
 
+// postJSON sends a POST request with JSON body to the specified URL.
+// It implements automatic model fallback on 404 errors.
+//
+// IMPORTANT: Caller is responsible for closing resp.Body if resp is non-nil and err is nil.
+// On error, the response body (if any) is already closed by this function.
 func (c *Client) postJSON(ctx context.Context, url string, body []byte, bearer string) (*http.Response, error) {
 	// Determine requested base model and construct fallback order
 	origModel := strings.TrimSpace(gjson.GetBytes(body, "model").String())
@@ -245,18 +250,37 @@ func (c *Client) shouldRetry(resp *http.Response, err error, attempt int) (bool,
 
 // moved to client_headers.go
 
-// Non-stream request to Code Assist v1internal:generateContent
+// Generate sends a non-stream request to Code Assist v1internal:generateContent.
+//
+// IMPORTANT: Caller MUST close resp.Body if resp is non-nil and err is nil.
+// Example:
+//   resp, err := client.Generate(ctx, payload)
+//   if err != nil { return err }
+//   defer resp.Body.Close()
 func (c *Client) Generate(ctx context.Context, payload []byte) (*http.Response, error) {
 	useURL := c.cfg.CodeAssist + "/v1internal:generateContent"
 	return c.postJSON(ctx, useURL, payload, c.getToken())
 }
 
-// Stream request to Code Assist v1internal:streamGenerateContent
+// Stream sends a stream request to Code Assist v1internal:streamGenerateContent.
+//
+// IMPORTANT: Caller MUST close resp.Body if resp is non-nil and err is nil.
+// Example:
+//   resp, err := client.Stream(ctx, payload)
+//   if err != nil { return err }
+//   defer resp.Body.Close()
 func (c *Client) Stream(ctx context.Context, payload []byte) (*http.Response, error) {
 	useURL := c.cfg.CodeAssist + "/v1internal:streamGenerateContent?alt=sse"
 	return c.postJSON(ctx, useURL, payload, c.getToken())
 }
 
+// CountTokens sends a request to Code Assist v1internal:countTokens.
+//
+// IMPORTANT: Caller MUST close resp.Body if resp is non-nil and err is nil.
+// Example:
+//   resp, err := client.CountTokens(ctx, payload)
+//   if err != nil { return err }
+//   defer resp.Body.Close()
 func (c *Client) CountTokens(ctx context.Context, payload []byte) (*http.Response, error) {
 	useURL := c.cfg.CodeAssist + "/v1internal:countTokens"
 	return c.postJSON(ctx, useURL, payload, c.getToken())

@@ -68,6 +68,8 @@ func (h *Handler) GenerateContent(c *gin.Context) {
 	if err != nil {
 		if usedCred != nil {
 			h.credMgr.MarkFailure(usedCred.ID, "read_error", 0)
+			// Record failed request
+			h.recordCredentialUsage(usedCred.ID, usedModel, nil, false)
 		}
 		common.AbortWithError(c, http.StatusBadGateway, "upstream_error", err.Error())
 		return
@@ -78,6 +80,8 @@ func (h *Handler) GenerateContent(c *gin.Context) {
 			if h.router != nil {
 				h.router.OnResult(usedCred.ID, resp.StatusCode)
 			}
+			// Record failed request
+			h.recordCredentialUsage(usedCred.ID, usedModel, nil, false)
 		}
 		common.AbortWithUpstreamError(c, resp.StatusCode, "upstream_error", "", by)
 		return
@@ -85,6 +89,12 @@ func (h *Handler) GenerateContent(c *gin.Context) {
 	// upstream may return {response: {...}} or direct.
 	var obj map[string]any
 	_ = json.Unmarshal(by, &obj)
+
+	// Record successful request with token usage
+	if usedCred != nil && h.usageTracker != nil {
+		tokens := h.extractTokenUsage(by)
+		h.recordCredentialUsage(usedCred.ID, usedModel, tokens, true)
+	}
 	if usedModel != "" && usedModel != base {
 		path := c.FullPath()
 		if path == "" {

@@ -55,6 +55,15 @@ type EnhancedMetrics struct {
 
 	// Plan apply metrics
 	planOps map[planOpKey]*PlanOpStats
+
+	// Fallback metrics (model fallback transparency)
+	fallbackEvents map[fallbackKey]*FallbackStats // from_model:to_model:reason -> stats
+
+	// Cache invalidation metrics
+	cacheInvalidations map[string]int64 // reason -> count
+
+	// Circuit breaker / cooldown metrics
+	cooldownByModel map[cooldownKey]*CooldownStats // credential_id:model:project -> stats
 }
 
 type storageOpAggregate struct {
@@ -90,6 +99,35 @@ type PlanOpStats struct {
 	DurationSumS float64
 }
 
+type fallbackKey struct {
+	FromModel string
+	ToModel   string
+	Reason    string
+}
+
+// FallbackStats captures fallback event statistics
+type FallbackStats struct {
+	Count       int64
+	SuccessCount int64
+	FailureCount int64
+	TotalDurationMS int64
+	AvgDurationMS float64
+}
+
+type cooldownKey struct {
+	CredentialID string
+	Model        string
+	Project      string
+}
+
+// CooldownStats captures cooldown/circuit breaker statistics
+type CooldownStats struct {
+	ActiveCooldowns int64
+	TotalCooldowns  int64
+	LastCooldownAt  time.Time
+	CooldownReason  string
+}
+
 // NewEnhancedMetrics creates a new metrics tracker
 func NewEnhancedMetrics() *EnhancedMetrics {
 	return &EnhancedMetrics{
@@ -111,6 +149,9 @@ func NewEnhancedMetrics() *EnhancedMetrics {
 		storageSlowOps:        make(map[string]map[string]int64),
 		storagePoolStats:      make(map[string]StoragePoolStats),
 		planOps:               make(map[planOpKey]*PlanOpStats),
+		fallbackEvents:        make(map[fallbackKey]*FallbackStats),
+		cacheInvalidations:    make(map[string]int64),
+		cooldownByModel:       make(map[cooldownKey]*CooldownStats),
 	}
 }
 
@@ -577,6 +618,140 @@ func calculatePercentile(values []float64, percentile float64) float64 {
 		rank = n
 	}
 	return cp[rank-1]
+}
+
+// RecordFallback records a model fallback event
+func (m *EnhancedMetrics) RecordFallback(fromModel, toModel, reason string, success bool, durationMS int64) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	key := fallbackKey{
+		FromModel: fromModel,
+		ToModel:   toModel,
+		Reason:    reason,
+	}
+
+	stats, exists := m.fallbackEvents[key]
+	if !exists {
+		stats = &FallbackStats{}
+		m.fallbackEvents[key] = stats
+	}
+
+	stats.Count++
+	if success {
+		stats.SuccessCount++
+	} else {
+		stats.FailureCount++
+	}
+	stats.TotalDurationMS += durationMS
+	if stats.Count > 0 {
+		stats.AvgDurationMS = float64(stats.TotalDurationMS) / float64(stats.Count)
+	}
+}
+
+// GetFallbackStats returns fallback statistics
+func (m *EnhancedMetrics) GetFallbackStats() map[string]*FallbackStats {
+    m.mu.RLock()
+    defer m.mu.RUnlock()
+
+    // 为避免高基数无限增长，返回 Top-N（按 Count DESC）。
+    const topN = 200
+    type item struct{
+        k string
+        v *FallbackStats
+    }
+    items := make([]item, 0, len(m.fallbackEvents))
+    for key, stats := range m.fallbackEvents {
+        keyStr := key.FromModel + ":" + key.ToModel + ":" + key.Reason
+        items = append(items, item{k: keyStr, v: &FallbackStats{
+            Count:           stats.Count,
+            SuccessCount:    stats.SuccessCount,
+            FailureCount:    stats.FailureCount,
+            TotalDurationMS: stats.TotalDurationMS,
+            AvgDurationMS:   stats.AvgDurationMS,
+        }})
+    }
+    sort.Slice(items, func(i, j int) bool { return items[i].v.Count > items[j].v.Count })
+    if len(items) > topN { items = items[:topN] }
+    result := make(map[string]*FallbackStats, len(items))
+    for _, it := range items { result[it.k] = it.v }
+    return result
+}
+
+// RecordCacheInvalidation records a cache invalidation event
+func (m *EnhancedMetrics) RecordCacheInvalidation(credID string, reason string) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.cacheInvalidations[reason]++
+}
+
+// GetCacheInvalidationStats returns cache invalidation statistics
+func (m *EnhancedMetrics) GetCacheInvalidationStats() map[string]int64 {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	result := make(map[string]int64)
+	for reason, count := range m.cacheInvalidations {
+		result[reason] = count
+	}
+	return result
+}
+
+// RecordCooldown records a cooldown event
+func (m *EnhancedMetrics) RecordCooldown(credentialID, model, project, reason string, active bool) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	key := cooldownKey{
+		CredentialID: credentialID,
+		Model:        model,
+		Project:      project,
+	}
+
+	stats, exists := m.cooldownByModel[key]
+	if !exists {
+		stats = &CooldownStats{}
+		m.cooldownByModel[key] = stats
+	}
+
+	if active {
+		stats.ActiveCooldowns++
+	} else {
+		if stats.ActiveCooldowns > 0 {
+			stats.ActiveCooldowns--
+		}
+	}
+	stats.TotalCooldowns++
+	stats.LastCooldownAt = time.Now()
+	stats.CooldownReason = reason
+}
+
+// GetCooldownStats returns cooldown statistics
+func (m *EnhancedMetrics) GetCooldownStats() map[string]*CooldownStats {
+    m.mu.RLock()
+    defer m.mu.RUnlock()
+
+    // 返回最近活跃 Top-N（按 LastCooldownAt DESC）。
+    const topN = 200
+    type item struct{
+        k string
+        v *CooldownStats
+    }
+    items := make([]item, 0, len(m.cooldownByModel))
+    for key, stats := range m.cooldownByModel {
+        keyStr := key.CredentialID + ":" + key.Model + ":" + key.Project
+        items = append(items, item{k: keyStr, v: &CooldownStats{
+            ActiveCooldowns: stats.ActiveCooldowns,
+            TotalCooldowns:  stats.TotalCooldowns,
+            LastCooldownAt:  stats.LastCooldownAt,
+            CooldownReason:  stats.CooldownReason,
+        }})
+    }
+    sort.Slice(items, func(i, j int) bool { return items[i].v.LastCooldownAt.After(items[j].v.LastCooldownAt) })
+    if len(items) > topN { items = items[:topN] }
+    result := make(map[string]*CooldownStats, len(items))
+    for _, it := range items { result[it.k] = it.v }
+    return result
 }
 
 func calculateCacheHitRate(hits, misses int64) float64 {

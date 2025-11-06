@@ -85,6 +85,13 @@ var fileUpdateSetters = map[string]updater{
 		}
 		return false
 	},
+	"compatibility_mode": func(fc *FileConfig, v interface{}) bool {
+		if b, ok := v.(bool); ok {
+			fc.CompatibilityMode = b
+			return true
+		}
+		return false
+	},
 	"rate_limit_enabled": func(fc *FileConfig, v interface{}) bool {
 		if b, ok := v.(bool); ok {
 			fc.RateLimitEnabled = b

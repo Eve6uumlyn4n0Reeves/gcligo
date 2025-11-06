@@ -22,16 +22,16 @@ func (m *memBackend) Initialize(ctx context.Context) error { return nil }
 func (m *memBackend) Close() error                         { return nil }
 func (m *memBackend) Health(ctx context.Context) error     { return nil }
 func (m *memBackend) GetCredential(ctx context.Context, id string) (map[string]interface{}, error) {
-	return nil, &store.ErrNotSupported{"cred"}
+	return nil, &store.ErrNotSupported{Operation: "cred"}
 }
 func (m *memBackend) SetCredential(ctx context.Context, id string, data map[string]interface{}) error {
-	return &store.ErrNotSupported{"cred"}
+	return &store.ErrNotSupported{Operation: "cred"}
 }
 func (m *memBackend) DeleteCredential(ctx context.Context, id string) error {
-	return &store.ErrNotSupported{"cred"}
+	return &store.ErrNotSupported{Operation: "cred"}
 }
 func (m *memBackend) ListCredentials(ctx context.Context) ([]string, error) {
-	return nil, &store.ErrNotSupported{"cred"}
+	return nil, &store.ErrNotSupported{Operation: "cred"}
 }
 func (m *memBackend) GetConfig(ctx context.Context, key string) (interface{}, error) {
 	v, ok := m.cfg[key]
@@ -52,38 +52,38 @@ func (m *memBackend) ListConfigs(ctx context.Context) (map[string]interface{}, e
 	return m.cfg, nil
 }
 func (m *memBackend) IncrementUsage(ctx context.Context, key string, field string, delta int64) error {
-	return &store.ErrNotSupported{"usage"}
+	return &store.ErrNotSupported{Operation: "usage"}
 }
 func (m *memBackend) GetUsage(ctx context.Context, key string) (map[string]interface{}, error) {
-	return nil, &store.ErrNotSupported{"usage"}
+	return nil, &store.ErrNotSupported{Operation: "usage"}
 }
 func (m *memBackend) ResetUsage(ctx context.Context, key string) error {
-	return &store.ErrNotSupported{"usage"}
+	return &store.ErrNotSupported{Operation: "usage"}
 }
 func (m *memBackend) ListUsage(ctx context.Context) (map[string]map[string]interface{}, error) {
-	return nil, &store.ErrNotSupported{"usage"}
+	return nil, &store.ErrNotSupported{Operation: "usage"}
 }
 func (m *memBackend) GetCache(ctx context.Context, key string) ([]byte, error) {
-	return nil, &store.ErrNotSupported{"cache"}
+	return nil, &store.ErrNotSupported{Operation: "cache"}
 }
 func (m *memBackend) SetCache(ctx context.Context, key string, value []byte, ttl time.Duration) error {
-	return &store.ErrNotSupported{"cache"}
+	return &store.ErrNotSupported{Operation: "cache"}
 }
 func (m *memBackend) DeleteCache(ctx context.Context, key string) error {
-	return &store.ErrNotSupported{"cache"}
+	return &store.ErrNotSupported{Operation: "cache"}
 }
 func (m *memBackend) BatchGetCredentials(ctx context.Context, ids []string) (map[string]map[string]interface{}, error) {
-	return nil, &store.ErrNotSupported{"batch"}
+	return nil, &store.ErrNotSupported{Operation: "batch"}
 }
 func (m *memBackend) BatchSetCredentials(ctx context.Context, data map[string]map[string]interface{}) error {
-	return &store.ErrNotSupported{"batch"}
+	return &store.ErrNotSupported{Operation: "batch"}
 }
 func (m *memBackend) BatchDeleteCredentials(ctx context.Context, ids []string) error {
-	return &store.ErrNotSupported{"batch"}
+	return &store.ErrNotSupported{Operation: "batch"}
 }
 func (m *memBackend) BeginTransaction(ctx context.Context) (store.Transaction, error) {
 	if !m.tx {
-		return nil, &store.ErrNotSupported{"tx"}
+		return nil, &store.ErrNotSupported{Operation: "tx"}
 	}
 	return &memTx{m: m, pending: map[string]interface{}{}, commitErr: m.commitErr}, nil
 }
@@ -100,13 +100,13 @@ type memTx struct {
 }
 
 func (t *memTx) GetCredential(ctx context.Context, id string) (map[string]interface{}, error) {
-	return nil, &store.ErrNotSupported{"cred"}
+	return nil, &store.ErrNotSupported{Operation: "cred"}
 }
 func (t *memTx) SetCredential(ctx context.Context, id string, data map[string]interface{}) error {
-	return &store.ErrNotSupported{"cred"}
+	return &store.ErrNotSupported{Operation: "cred"}
 }
 func (t *memTx) DeleteCredential(ctx context.Context, id string) error {
-	return &store.ErrNotSupported{"cred"}
+	return &store.ErrNotSupported{Operation: "cred"}
 }
 func (t *memTx) GetConfig(ctx context.Context, key string) (interface{}, error) {
 	if v, ok := t.pending[key]; ok {

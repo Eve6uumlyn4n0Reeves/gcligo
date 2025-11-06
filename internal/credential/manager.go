@@ -49,6 +49,9 @@ type Options struct {
 	RefreshCoordinator RefreshCoordinator
 }
 
+// InvalidationHook is a callback function for cache invalidation
+type InvalidationHook func(credID string, reason string)
+
 // Manager manages multiple credentials with rotation and circuit breaking
 type Manager struct {
 	credentials       []*Credential
@@ -88,6 +91,9 @@ type Manager struct {
 	refreshCoord RefreshCoordinator
 
 	publisher events.Publisher
+
+	// Invalidation hooks for cache consistency
+	invalidationHooks []InvalidationHook
 }
 
 const (
@@ -200,6 +206,34 @@ func (m *Manager) SetEventPublisher(p events.Publisher) {
 	m.publisher = p
 }
 
+// RegisterInvalidationHook registers a callback for cache invalidation
+func (m *Manager) RegisterInvalidationHook(hook InvalidationHook) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.invalidationHooks = append(m.invalidationHooks, hook)
+}
+
+// triggerInvalidation calls all registered invalidation hooks
+func (m *Manager) triggerInvalidation(credID string, reason string) {
+	m.mu.RLock()
+	hooks := make([]InvalidationHook, len(m.invalidationHooks))
+	copy(hooks, m.invalidationHooks)
+	m.mu.RUnlock()
+
+	// Call hooks without holding the lock to avoid deadlocks
+	for _, hook := range hooks {
+		if hook != nil {
+			hook(credID, reason)
+		}
+	}
+
+	log.WithFields(log.Fields{
+		"credential_id": credID,
+		"reason":        reason,
+		"hooks_called":  len(hooks),
+	}).Debug("Cache invalidation triggered")
+}
+
 // LoadCredentials loads credentials from configured sources (defaults to authDir).
 func (m *Manager) LoadCredentials() error {
 	ctx := context.Background()
@@ -266,6 +300,14 @@ func (m *Manager) LoadCredentials() error {
 
 	log.Infof("Loaded %d credentials from %d source(s)", len(aggregated), len(m.sources))
 	m.emitCredentialSnapshot(aggregated)
+
+	// Trigger cache invalidation for all credentials on reload
+	for _, cred := range aggregated {
+		if cred != nil {
+			m.triggerInvalidation(cred.ID, "credential_reloaded")
+		}
+	}
+
 	return nil
 }
 
@@ -309,6 +351,10 @@ func (m *Manager) DisableCredential(credID string) error {
 	log.Infof("Disabled credential %s", credID)
 	m.persistCredentialState(target, true)
 	m.emitCredentialEvent("disabled", target.Clone())
+
+	// Trigger cache invalidation hooks
+	m.triggerInvalidation(credID, "credential_disabled")
+
 	return nil
 }
 
@@ -326,6 +372,10 @@ func (m *Manager) EnableCredential(credID string) error {
 	log.Infof("Enabled credential %s", credID)
 	m.persistCredentialState(target, true)
 	m.emitCredentialEvent("enabled", target.Clone())
+
+	// Trigger cache invalidation hooks
+	m.triggerInvalidation(credID, "credential_enabled")
+
 	return nil
 }
 
@@ -352,6 +402,8 @@ func (m *Manager) DeleteCredential(credID string) error {
 	m.deleteCredentialState(credID)
 	if target != nil {
 		m.emitCredentialEvent("deleted", target.Clone())
+		// Trigger cache invalidation hooks
+		m.triggerInvalidation(credID, "credential_deleted")
 	}
 	return nil
 }
